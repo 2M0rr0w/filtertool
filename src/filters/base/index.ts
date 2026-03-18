@@ -606,7 +606,7 @@ ${rule().rarity('==', 'Normal').areaLevel('<=', 4).size(40).compile()}
 ${rule().itemClass('Quest Items').text(0, 255, 0).border(0, 255, 0).background(0, 0, 0).size(45).effect('Green').sound(3).compile()}
 
 ### Div Cards
-${rule().baseType("The Heroic Shot", "Society's Remorse").icon("Green", "Circle").text(0, 255, 0).border(0, 255, 0).background(0, 0, 0).size(45).sound(2).compile()}
+${rule().baseType('The Heroic Shot', "Society's Remorse").icon('Green', 'Circle').text(0, 255, 0).border(0, 255, 0).background(0, 0, 0).size(45).sound(2).compile()}
 
 ${rule().itemClass('Divination Cards').text(0, 255, 0).size(40).compile()}
 
@@ -735,13 +735,13 @@ ${rule()
 ### Misc
 
 ## Map Stuff
-${rule().itemClass("Vault Keys").style(STYLE.A).icon("Purple", "Star").sound(6).size(45).compile()}
+${rule().itemClass('Vault Keys').style(STYLE.A).icon('Purple', 'Star').sound(6).size(45).compile()}
 
-${rule().itemClass("Maps", "Expedition Logbooks").text(255, 255, 255).background(40, 40, 40).border(255, 255, 255).icon("White", "Square").sound(5).size(45).compile()}
+${rule().itemClass('Maps', 'Expedition Logbooks').text(255, 255, 255).background(40, 40, 40).border(255, 255, 255).icon('White', 'Square').sound(5).size(45).compile()}
 
-${rule().itemClass("Map Fragments", "Misc Map Items").text(255, 0, 50).background(0, 0, 0).border(255, 0, 50).icon("Purple", "Circle").sound(4).size(45).compile()}
+${rule().itemClass('Map Fragments', 'Misc Map Items').text(255, 0, 50).background(0, 0, 0).border(255, 0, 50).icon('Purple', 'Circle').sound(4).size(45).compile()}
 
-${rule().itemClass("Sanctum Research", "Relics").text(255, 0, 50).background(40, 0, 20).border(255, 0, 50).icon("Red", "UpsideDownHouse").sound(5).size(45).compile()}
+${rule().itemClass('Sanctum Research', 'Relics').text(255, 0, 50).background(40, 0, 20).border(255, 0, 50).icon('Red', 'UpsideDownHouse').sound(5).size(45).compile()}
 
 
 ### Global Hide
