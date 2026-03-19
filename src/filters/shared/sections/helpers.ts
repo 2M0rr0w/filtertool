@@ -59,7 +59,6 @@ export type WeaponItemClass =
   | "Two Hand Swords"
   | "Wands"
   | "Fishing Rods"
-export type ArmourItemClass = (typeof ARMOUR_CLASSES)[number]
 export type WeaponBaseType =
   | Bows
   | Claws
@@ -122,7 +121,6 @@ export type SocketBasesConfig = {
 export type RareItemsConfig = {
   weaponItemClasses?: readonly WeaponItemClass[]
   maxAreaLevel?: number
-  earlyBootClass?: ArmourItemClass
   earlyBootMaxAreaLevel?: number
 }
 

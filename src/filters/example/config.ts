@@ -1,6 +1,10 @@
 import { type BuildProfile, type BuildSpecificOptions } from "../shared"
 
 /* Set your preferred armour types and shield progression here.
+`preferredArmourTypes` is always literal.
+For example, `["armour", "evasion"]` covers only `"armour"` and `"evasion"`,
+and `["armour-evasion"]` covers only `"armour-evasion"`.
+
 `preferredArmourTypes` is also used as the default source for generic 4-link rules,
 so for most builds you do not need to repeat those in `links.genericFourLinks`.
 Only set `links.genericFourLinks` if you want to override that default.
@@ -12,7 +16,7 @@ Only set `links.genericFourLinks` if you want to override that default.
 
 You can also use `{ mode: "early", maxAreaLevel: 10 }` if you want to override the default early cutoff. */
 export const buildProfile = {
-  preferredArmourTypes: ["armour", "evasion"] as const,
+  preferredArmourTypes: ["armour", "evasion", "armour-evasion"] as const,
   shieldProgression: "early",
 } as const satisfies BuildProfile
 

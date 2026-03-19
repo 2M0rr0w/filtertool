@@ -13,7 +13,6 @@ export const filterDefaults = {
   },
   rareItems: {
     maxAreaLevel: 45,
-    earlyBootClass: "Boots",
     earlyBootMaxAreaLevel: 24,
   },
   chromaticItems: {

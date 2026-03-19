@@ -132,20 +132,21 @@ export const highlightedEquipment = ({ highlights = [] }: HighlightedEquipmentCo
 
 export const socketBases = ({
   preferredArmourTypes,
-  itemClasses = ARMOUR_CLASSES,
+  itemClasses,
   maxAreaLevel = filterDefaults.socketBases.maxAreaLevel,
   desiredThreeSocketGroups = filterDefaults.socketBases.desiredThreeSocketGroups,
   desiredThreeSocketMaxAreaLevel = filterDefaults.socketBases.desiredThreeSocketMaxAreaLevel,
   shieldProgression,
-}: SocketBasesConfig & BuildProfile & { itemClasses?: typeof ARMOUR_CLASSES }) => {
+}: SocketBasesConfig & BuildProfile & { itemClasses?: typeof SOCKETABLE_CLASSES }) => {
   const shieldConfig = normalizeShieldProgressionConfig(shieldProgression)
+  const effectiveItemClasses = itemClasses ?? (shieldConfig.enabled && shieldConfig.maxAreaLevel === undefined ? SOCKETABLE_CLASSES : ARMOUR_CLASSES)
 
   return withHeading(
     "Socket Bases",
     compileRules(
       ...preferredArmourTypes.map((baseType) =>
         rule()
-          .itemClass(...itemClasses)
+          .itemClass(...effectiveItemClasses)
           .sockets(">=", 4)
           .areaLevel("<=", maxAreaLevel)
           .mixin(defenceMixinMap[baseType])
@@ -154,7 +155,7 @@ export const socketBases = ({
       ),
       rule()
         .sockets("==", 3)
-        .itemClass(...itemClasses)
+        .itemClass(...effectiveItemClasses)
         .socketGroup(">=", ...desiredThreeSocketGroups)
         .areaLevel("<=", desiredThreeSocketMaxAreaLevel)
         .border(255, 0, 127),
@@ -166,7 +167,6 @@ export const rareItems = ({
   preferredArmourTypes,
   weaponItemClasses = [],
   maxAreaLevel = filterDefaults.rareItems.maxAreaLevel,
-  earlyBootClass = filterDefaults.rareItems.earlyBootClass,
   earlyBootMaxAreaLevel = filterDefaults.rareItems.earlyBootMaxAreaLevel,
   shieldProgression,
 }: RareItemsConfig & BuildProfile) => {
@@ -177,12 +177,12 @@ export const rareItems = ({
     "Rare Items",
     compileRules(
       rule()
-        .itemClass(earlyBootClass)
+        .itemClass("Boots")
         .areaLevel("<=", earlyBootMaxAreaLevel)
         .rarity("==", "Rare")
         .mixin(styleMixin(filterStyles.rareArmour))
         .customSound(soundFile("rare_boots.mp3")),
-      rule().itemClass(earlyBootClass).rarity("==", "Rare").mixin(styleMixin(filterStyles.rareArmour)),
+      rule().itemClass("Boots").rarity("==", "Rare").mixin(styleMixin(filterStyles.rareArmour)),
       ...preferredArmourTypes.map((baseType) =>
         rule()
           .itemClass(...ARMOUR_CLASSES)
