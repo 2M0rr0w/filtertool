@@ -1,4 +1,5 @@
 import rule from "../../../rule"
+import { filterDefaults } from "../defaults"
 import { filterStyles, soundFile, styleMixin } from "../styles"
 import {
   BuildProfile,
@@ -29,20 +30,19 @@ export const links = ({
   twoLinkPatterns = [],
   twoLinkMaxAreaLevel,
   threeLinkPatterns = [],
-  threeLinkMaxAreaLevel = 33,
+  threeLinkMaxAreaLevel = filterDefaults.links.threeLinkMaxAreaLevel,
   fourLinkPatterns = [],
   genericFourLinks,
   preferredArmourTypes,
   shieldProgression,
-}: LinksConfig & Partial<BuildProfile>) =>
-  {
-    const shieldConfig = normalizeShieldProgressionConfig(shieldProgression)
-    const genericThreeLinkClasses = shieldConfig.enabled ? SOCKETABLE_CLASSES : ARMOUR_CLASSES
-    const genericFourLinkEntries = genericFourLinks ?? preferredArmourTypes ?? []
+}: LinksConfig & Partial<BuildProfile>) => {
+  const shieldConfig = normalizeShieldProgressionConfig(shieldProgression)
+  const genericThreeLinkClasses = shieldConfig.enabled ? SOCKETABLE_CLASSES : ARMOUR_CLASSES
+  const genericFourLinkEntries = genericFourLinks ?? preferredArmourTypes ?? []
 
-    return withHeading(
-      "Links",
-      compileRules(
+  return withHeading(
+    "Links",
+    compileRules(
       rule().linkedSockets("=", 6).icon("Red", "Diamond").mixin(styleMixin(filterStyles.priorityA)).customSound(soundFile("6_link.mp3")),
       rule().linkedSockets("=", 5).icon("Orange", "Diamond").mixin(styleMixin(filterStyles.priorityB)).customSound(soundFile("5_link.mp3")),
       ...fourLinkPatterns.flatMap((entry) => {
@@ -81,18 +81,18 @@ export const links = ({
       }),
       ...(shieldConfig.enabled
         ? threeLinkPatterns.flatMap((entry) => {
-          const { pattern } = normalizeSocketPatternConfig(entry)
+            const { pattern } = normalizeSocketPatternConfig(entry)
 
-          return buildItemClassSocketRules({
-            linkedSockets: 3,
-            pattern,
-            itemClasses: ["Shields"],
-            soundPrefix: getShieldThreeLinkSoundPrefix(pattern),
-            iconColor: "Green",
-            maxAreaLevel: shieldConfig.maxAreaLevel,
-            style: styleMixin(filterStyles.threeLink),
+            return buildItemClassSocketRules({
+              linkedSockets: 3,
+              pattern,
+              itemClasses: ["Shields"],
+              soundPrefix: getShieldThreeLinkSoundPrefix(pattern),
+              iconColor: "Green",
+              maxAreaLevel: shieldConfig.maxAreaLevel,
+              style: styleMixin(filterStyles.threeLink),
+            })
           })
-        })
         : []),
       rule()
         .linkedSockets("==", 3)
@@ -115,9 +115,9 @@ export const links = ({
 
         return builtRule
       }),
-      ),
-    )
-  }
+    ),
+  )
+}
 
 export const sixSockets = () =>
   withHeading(
@@ -133,18 +133,16 @@ export const highlightedEquipment = ({ highlights = [] }: HighlightedEquipmentCo
 export const socketBases = ({
   preferredArmourTypes,
   itemClasses = ARMOUR_CLASSES,
-  maxAreaLevel = 45,
-  goodShieldBaseTypes = ["Painted Buckler", "War Buckler"],
-  desiredThreeSocketGroups = ["RG"],
-  goodThreeSocketMaxAreaLevel = 20,
+  maxAreaLevel = filterDefaults.socketBases.maxAreaLevel,
+  desiredThreeSocketGroups = filterDefaults.socketBases.desiredThreeSocketGroups,
+  goodThreeSocketMaxAreaLevel = filterDefaults.socketBases.goodThreeSocketMaxAreaLevel,
   shieldProgression,
-}: SocketBasesConfig & BuildProfile & { itemClasses?: typeof ARMOUR_CLASSES }) =>
-  {
-    const shieldConfig = normalizeShieldProgressionConfig(shieldProgression)
+}: SocketBasesConfig & BuildProfile & { itemClasses?: typeof ARMOUR_CLASSES }) => {
+  const shieldConfig = normalizeShieldProgressionConfig(shieldProgression)
 
-    return withHeading(
-      "Socket Bases",
-      compileRules(
+  return withHeading(
+    "Socket Bases",
+    compileRules(
       ...preferredArmourTypes.map((baseType) =>
         rule()
           .itemClass(...itemClasses)
@@ -154,28 +152,22 @@ export const socketBases = ({
           .icon("Cyan", "Diamond")
           .mixin(styleMixin(filterStyles.fourLink)),
       ),
-      shieldConfig.enabled &&
-        rule()
-          .baseType(...goodShieldBaseTypes)
-          .areaLevel("<=", shieldConfig.maxAreaLevel)
-          .background(0, 50, 0)
-          .size(45),
       rule()
         .sockets("==", 3)
         .itemClass(...itemClasses)
         .socketGroup(">=", ...desiredThreeSocketGroups)
         .areaLevel("<=", goodThreeSocketMaxAreaLevel)
         .border(255, 0, 127),
-      ),
-    )
-  }
+    ),
+  )
+}
 
 export const rareItems = ({
   preferredArmourTypes,
   weaponItemClasses = [],
-  maxAreaLevel = 45,
-  earlyBootClass = "Boots",
-  earlyBootMaxAreaLevel = 24,
+  maxAreaLevel = filterDefaults.rareItems.maxAreaLevel,
+  earlyBootClass = filterDefaults.rareItems.earlyBootClass,
+  earlyBootMaxAreaLevel = filterDefaults.rareItems.earlyBootMaxAreaLevel,
   shieldProgression,
 }: RareItemsConfig & BuildProfile) => {
   const jewelleryClasses = ["Rings", "Amulets", "Belts"] as const
@@ -210,7 +202,15 @@ export const rareItems = ({
         .areaLevel("<=", maxAreaLevel)
         .size(45),
       shieldConfig.enabled &&
-        rule().itemClass("Shields").rarity("==", "Rare").areaLevel("<=", shieldConfig.maxAreaLevel).size(45),
+        (() => {
+          const builtRule = rule().itemClass("Shields").rarity("==", "Rare").size(45)
+
+          if (shieldConfig.maxAreaLevel !== undefined) {
+            builtRule.areaLevel("<=", shieldConfig.maxAreaLevel)
+          }
+
+          return builtRule
+        })(),
       weaponItemClasses.length > 0 &&
         rule()
           .itemClass(...weaponItemClasses)
@@ -384,7 +384,7 @@ export const jewellery = () =>
     ),
   )
 
-export const chromaticItems = ({ areaLevelCap = 20 }: ChromaticItemsConfig = {}) =>
+export const chromaticItems = ({ areaLevelCap = filterDefaults.chromaticItems.areaLevelCap }: ChromaticItemsConfig = {}) =>
   withHeading(
     "Chromatic Items",
     compileRules(
@@ -460,7 +460,7 @@ export const flasks = () =>
     ),
   )
 
-export const tinctures = ({ baseTypes = ["Prismatic Tincture"] }: TincturesConfig = {}) =>
+export const tinctures = ({ baseTypes = filterDefaults.tinctures.baseTypes }: TincturesConfig = {}) =>
   withHeading(
     "Tinctures",
     compileRules(
