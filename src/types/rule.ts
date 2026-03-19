@@ -13,10 +13,12 @@ import {
   Shape,
 } from '.'
 
+export type HexColor = `#${string}`
+
 export type StyleData = {
-  text?: [number, number, number]
-  background?: [number, number, number]
-  border?: [number, number, number]
+  text?: HexColor
+  background?: HexColor
+  border?: HexColor
   size?: number
 }
 

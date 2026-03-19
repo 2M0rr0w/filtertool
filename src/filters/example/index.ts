@@ -1,31 +1,149 @@
-import rule from '../../rule'
+import rule from "../../rule"
+import {
+  chromaticItems,
+  currency,
+  divinationCards,
+  earlyActs,
+  earlySocketFallbacks,
+  flasks,
+  gems,
+  highlightedEquipment,
+  jewellery,
+  joinSections,
+  links,
+  misc,
+  optionalSection,
+  questItems,
+  rareItems,
+  scrolls,
+  sixSockets,
+  socketBases,
+  tinctures,
+  twilightStrand,
+  uniques,
+  type BuildProfile,
+  type BuildSpecificOptions,
+} from "../shared"
 
-// Filter entry point exports a getFilter function to be called by the export script
-export const getFilter = () => `
-### Basic rule
-# Apply rule conditions and finish with a .compile() to turn the rule into a valid .filter string
-# By default rules are "Show" rules (you can use .hide() to turn it into a hide rule)
-${rule().baseType('Opal Sceptre').linkedSockets('>', 4).sound(1).border(255, 0, 0).text(255, 0, 0).size(45).compile()}
+const buildProfile = {
+  preferredArmourTypes: ["armour", "evasion"] as const,
+  earlyShields: {
+    enabled: true,
+    maxAreaLevel: 13,
+  },
+} as const satisfies BuildProfile
 
+const buildSpecificOptions = {
+  links: {
+    earlyShields: buildProfile.earlyShields,
+    twoLinkPatterns: [
+      // Early 2-links you want to see.
+      "RG",
+      "GG",
+    ],
+    threeLinkPatterns: [
+      // Main 3-links for your build.
+      "RRG",
+      "RGG",
+      "RGB",
+    ],
+    fourLinkPatterns: [
+      // Main 4-links for your build.
+      "RRRG",
+      "RRGG",
+      "RGGG",
+    ],
+    genericFourLinks: [
+      // Defence-type-based generic 4-links.
+      "armour",
+      "armour-evasion",
+      "evasion",
+    ],
+  },
+  socketBases: {
+    ...buildProfile,
+    goodThreeSocketGroups: [
+      // Good early 3-socket base colors on armour slots.
+      "RG",
+      "GG",
+    ],
+  },
+  rareItems: {
+    ...buildProfile,
+    weaponItemClasses: [
+      // Optional rare weapon classes to specially highlight.
+      // "Two Hand Axes",
+      // "Two Hand Maces",
+    ],
+  },
+  tinctures: {
+    baseTypes: [
+      // Optional tinctures for your build.
+      "Prismatic Tincture",
+    ],
+  },
+  highlightedEquipment: {
+    highlights: [
+      // Specific base types you always want highlighted.
+      { baseTypes: ["Rusted Hatchet", "Boarding Axe"] },
+      // You can also highlight an entire item class.
+      { itemClasses: ["One Hand Axes"] },
+      // Optional rarity-specific highlight.
+      {
+        baseTypes: ["Stone Axe", "Jade Chopper"],
+        rarityOperator: "==",
+        rarity: "Rare",
+      },
+    ],
+  },
+  earlyActs: {
+    earlyShields: buildProfile.earlyShields,
+    weaponHighlights: [
+      // Strong early weapon bases
+      { baseTypes: ["Stone Axe", "Driftwood Maul", "Corroded Blade"] },
+      // You can also highlight a whole weapon class.
+      { itemClasses: ["Two Hand Maces"] },
+    ],
+    showRustic: true,
+    includeMomentumColors: true,
+  },
+  earlySocketFallbacks: {
+    weaponItemClasses: [
+      // Weapon classes to include in very early fallback socket rules.
+      "Two Hand Axes",
+      "Two Hand Maces",
+    ],
+  },
+} as const satisfies BuildSpecificOptions
 
-### Rule groups
-# You can have rules inside rules. Rules which contain rules are called rule groups.
-# Everything applied to the rule group is applied to every single rule it contains.
-# When using rule groups only compile the outermost rule group. Rules inside dont have to be compiled.
-${rule(
-  rule().baseType('Regal Orb').icon('White', 'Circle'),
-  rule().baseType('Orb of Chance').icon('Cyan', 'Diamond'),
-  rule().baseType('Orb of Binding').icon('Pink', 'Kite'),
-  rule().baseType('Orb of Scouring').icon('Blue', 'Square'),
-  rule().baseType('Orb of Alchemy').icon('Yellow', 'Pentagon'),
-  rule().baseType('Orb of Alteration').icon('Red', 'UpsideDownHouse'),
-  rule().baseType('Vaal Orb').icon('Brown', 'Star'),
-  rule().baseType('Chaos Orb').icon('Grey', 'Diamond'),
-  rule().baseType('Orb of Regret').icon('Green', 'Moon')
-)
-  .text(255, 255, 255)
-  .background(0, 255, 255)
-  .border(255, 255, 255)
-  .size(45)
-  .compile()}
-`
+// Copy this file into a new filter folder and mainly adjust:
+// - buildProfile.preferredArmourTypes
+// - buildProfile.earlyShields
+// - links patterns
+// - rareItems weaponItemClasses
+// - highlightedEquipment base types
+// - earlyActs early bases
+// - earlySocketFallbacks weapon classes
+export const getFilter = () =>
+  joinSections(
+    twilightStrand(),
+    currency(),
+    scrolls(),
+    uniques(),
+    gems(),
+    links(buildSpecificOptions.links),
+    sixSockets(),
+    optionalSection(buildSpecificOptions.highlightedEquipment, highlightedEquipment),
+    optionalSection(buildSpecificOptions.socketBases, socketBases),
+    optionalSection(buildSpecificOptions.rareItems, rareItems),
+    jewellery(),
+    chromaticItems(),
+    flasks(),
+    optionalSection(buildSpecificOptions.tinctures, tinctures),
+    optionalSection(buildSpecificOptions.earlyActs, earlyActs),
+    optionalSection(buildSpecificOptions.earlySocketFallbacks, earlySocketFallbacks),
+    questItems(),
+    divinationCards(),
+    misc(),
+    rule().hide().compile(),
+  )

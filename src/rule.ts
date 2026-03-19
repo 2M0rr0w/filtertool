@@ -2,6 +2,17 @@ import path from 'path'
 import { createTTSFile } from './scripts/createTTS'
 import { Condition, Rule, RuleContent, StyleData } from './types'
 
+const hexToRgb = (hex: `#${string}`): [number, number, number] => {
+  const value = hex.slice(1)
+  const normalized = value.length === 3 ? value.split('').map((char) => `${char}${char}`).join('') : value
+
+  return [
+    parseInt(normalized.slice(0, 2), 16),
+    parseInt(normalized.slice(2, 4), 16),
+    parseInt(normalized.slice(4, 6), 16),
+  ]
+}
+
 const filterPath = process.env.FILTER_PATH || ''
 const soundsFolder = process.env.SOUNDS_FOLDER || ''
 
@@ -162,15 +173,15 @@ const rule = (...rules: Rule[]): Rule => {
     style(styleData?: StyleData) {
       if (!styleData) return this
       if (styleData.text) {
-        const [r, g, b] = styleData.text
+        const [r, g, b] = hexToRgb(styleData.text)
         this.text(r, g, b)
       }
       if (styleData.background) {
-        const [r, g, b] = styleData.background
+        const [r, g, b] = hexToRgb(styleData.background)
         this.background(r, g, b)
       }
       if (styleData.border) {
-        const [r, g, b] = styleData.border
+        const [r, g, b] = hexToRgb(styleData.border)
         this.border(r, g, b)
       }
       if (styleData.size !== undefined) {
