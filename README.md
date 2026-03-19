@@ -23,13 +23,13 @@ npm install
 FILTER_PATH="C:\Users\user\Documents\My Games\Path of Exile"
 ```
 
-3. Copy [`src/filters/example`](/home/moritz/workspace/poe/filtertool/src/filters/example) to a new folder under `src/filters/`.
+1. Copy [`src/filters/example`](src/filters/example) to a new folder under `src/filters/`.
 
-4. Edit [`config.ts`](/home/moritz/workspace/poe/filtertool/src/filters/example/config.ts).
+2. Edit [`config.ts`](src/filters/example/config.ts).
 
-For most standard filters, `config.ts` is the only file you need to touch. [`index.ts`](/home/moritz/workspace/poe/filtertool/src/filters/example/index.ts) usually only needs changes if you want a different section layout or custom logic.
+For most standard filters, `config.ts` is the only file you need to touch. [`index.ts`](/src/filters/example/index.ts) usually only needs changes if you want a different section layout or custom logic.
 
-5. Extract the `poeft-sounds` zip file into your `FILTER_PATH` folder.
+1. Extract the `poeft-sounds` zip file into your `FILTER_PATH` folder.
 
 This should create a `poeft-sounds/` folder next to your exported `.filter` file.
 
@@ -58,8 +58,8 @@ npm run export yourfilter
 
 ## Notes
 
-- Most config fields have autocomplete for Path of Exile item classes, base types, link patterns, and tinctures.
-- Custom filter folders under `src/filters/` are gitignored by default, while the shared example template stays tracked.
+- Most config fields have autocomplete for Path of Exile item classes, base types and link patterns
+- Custom filter folders under `src/filters/` are gitignored by default, while the shared example template stays tracked
 
 ---
 
