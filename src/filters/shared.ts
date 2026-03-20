@@ -10,6 +10,8 @@ export {
   highlightedEquipment,
   jewellery,
   links,
+  magicItems,
+  normalItems,
   rareItems,
   sixSockets,
   socketBases,

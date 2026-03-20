@@ -1,4 +1,5 @@
 import path from "path"
+import { DEFAULT_STYLE_SETTINGS } from "./filters/shared/styles"
 import { createTTSFile } from "./scripts/createTTS"
 import { getSoundPackFolder } from "./sounds/paths"
 import { Condition, Rule, RuleContent, StyleData } from "./types"
@@ -179,15 +180,14 @@ const rule = (...rules: Rule[]): Rule => {
       }
       if (styleData.background) {
         const [r, g, b] = hexToRgb(styleData.background)
-        this.background(r, g, b)
+        const opacity = styleData.backgroundOpacity ?? DEFAULT_STYLE_SETTINGS.backgroundOpacity
+        this.background(r, g, b, Math.round(opacity * 255))
       }
       if (styleData.border) {
         const [r, g, b] = hexToRgb(styleData.border)
         this.border(r, g, b)
       }
-      if (styleData.size !== undefined) {
-        this.size(styleData.size)
-      }
+      this.size(styleData.size ?? DEFAULT_STYLE_SETTINGS.size)
       return this
     },
 

@@ -2,22 +2,22 @@ import rule from "../../../rule"
 import { filterDefaults } from "../defaults"
 import { filterStyles, soundFile, styleMixin } from "../styles"
 import {
-  BuildProfile,
+  ARMOUR_CLASSES,
   buildFlaskSeries,
   buildGenericFourLinkRules,
-  buildHighlightedBaseTypeRule,
+  buildHighlightedBaseTypeRules,
   buildItemClassSocketRules,
+  BuildProfile,
   buildUtilityFlaskRules,
   ChromaticItemsConfig,
   compileRules,
   defenceMixinMap,
-  getShieldThreeLinkSoundPrefix,
+  FallbackItemsConfig,
   getSocketPatternSoundPrefix,
   HighlightedEquipmentConfig,
-  ARMOUR_CLASSES,
   LinksConfig,
-  normalizeShieldProgressionConfig,
   normalizeGenericFourLinkConfig,
+  normalizeShieldProgressionConfig,
   normalizeSocketPatternConfig,
   RareItemsConfig,
   SOCKETABLE_CLASSES,
@@ -28,7 +28,7 @@ import {
 
 export const links = ({
   twoLinkPatterns = [],
-  twoLinkMaxAreaLevel,
+  twoLinkMaxAreaLevel = filterDefaults.links.twoLinkMaxAreaLevel,
   threeLinkPatterns = [],
   threeLinkMaxAreaLevel = filterDefaults.links.threeLinkMaxAreaLevel,
   fourLinkPatterns = [],
@@ -37,8 +37,18 @@ export const links = ({
   shieldProgression,
 }: LinksConfig & Partial<BuildProfile>) => {
   const shieldConfig = normalizeShieldProgressionConfig(shieldProgression)
-  const genericThreeLinkClasses = shieldConfig.enabled ? SOCKETABLE_CLASSES : ARMOUR_CLASSES
   const genericFourLinkEntries = genericFourLinks ?? preferredArmourTypes ?? []
+  const shieldThreeLinkRule =
+    shieldConfig.enabled &&
+    buildItemClassSocketRules({
+      linkedSockets: 3,
+      pattern: "RGG",
+      itemClasses: ["Shields"],
+      soundPrefix: getSocketPatternSoundPrefix("RGG"),
+      iconColor: "Green",
+      maxAreaLevel: shieldConfig.maxAreaLevel,
+      style: styleMixin(filterStyles.threeLink),
+    })
 
   return withHeading(
     "Links",
@@ -79,32 +89,19 @@ export const links = ({
           style: styleMixin(filterStyles.threeLink),
         })
       }),
-      ...(shieldConfig.enabled
-        ? threeLinkPatterns.flatMap((entry) => {
-            const { pattern } = normalizeSocketPatternConfig(entry)
-
-            return buildItemClassSocketRules({
-              linkedSockets: 3,
-              pattern,
-              itemClasses: ["Shields"],
-              soundPrefix: getShieldThreeLinkSoundPrefix(pattern),
-              iconColor: "Green",
-              maxAreaLevel: shieldConfig.maxAreaLevel,
-              style: styleMixin(filterStyles.threeLink),
-            })
-          })
-        : []),
+      ...((shieldThreeLinkRule as ReturnType<typeof buildItemClassSocketRules> | false) || []),
       rule()
         .linkedSockets("==", 3)
-        .itemClass(...genericThreeLinkClasses)
+        .itemClass(...ARMOUR_CLASSES)
         .areaLevel("<=", threeLinkMaxAreaLevel)
         .icon("Green", "Diamond")
         .mixin(styleMixin(filterStyles.threeLink))
         .size(40),
       ...twoLinkPatterns.map((entry) => {
         const { pattern, maxAreaLevel, itemClasses } = normalizeSocketPatternConfig(entry)
+        const effectiveItemClasses = itemClasses ?? ARMOUR_CLASSES
         const builtRule = rule()
-          .itemClass(...(itemClasses ?? SOCKETABLE_CLASSES))
+          .itemClass(...effectiveItemClasses)
           .socketGroup("==", pattern)
           .icon("Green", "Diamond")
           .mixin(styleMixin(filterStyles.twoLink))
@@ -128,7 +125,7 @@ export const sixSockets = () =>
   )
 
 export const highlightedEquipment = ({ highlights = [] }: HighlightedEquipmentConfig) =>
-  withHeading("Highlighted Equipment", compileRules(...highlights.map(buildHighlightedBaseTypeRule)))
+  withHeading("Highlighted Equipment", compileRules(...highlights.flatMap(buildHighlightedBaseTypeRules)))
 
 export const socketBases = ({
   preferredArmourTypes,
@@ -138,9 +135,7 @@ export const socketBases = ({
   desiredThreeSocketMaxAreaLevel = filterDefaults.socketBases.desiredThreeSocketMaxAreaLevel,
   shieldProgression,
 }: SocketBasesConfig & BuildProfile & { itemClasses?: typeof SOCKETABLE_CLASSES }) => {
-  const shieldConfig = normalizeShieldProgressionConfig(shieldProgression)
-  const effectiveItemClasses =
-    itemClasses ?? (shieldConfig.enabled && shieldConfig.maxAreaLevel === undefined ? SOCKETABLE_CLASSES : ARMOUR_CLASSES)
+  const effectiveItemClasses = itemClasses ?? ARMOUR_CLASSES
 
   return withHeading(
     "Socket Bases",
@@ -164,70 +159,6 @@ export const socketBases = ({
   )
 }
 
-export const rareItems = ({
-  preferredArmourTypes,
-  weaponItemClasses = [],
-  maxAreaLevel = filterDefaults.rareItems.maxAreaLevel,
-  earlyBootMaxAreaLevel = filterDefaults.rareItems.earlyBootMaxAreaLevel,
-  shieldProgression,
-}: RareItemsConfig & BuildProfile) => {
-  const jewelleryClasses = ["Rings", "Amulets", "Belts"] as const
-  const shieldConfig = normalizeShieldProgressionConfig(shieldProgression)
-
-  return withHeading(
-    "Rare Items",
-    compileRules(
-      rule()
-        .itemClass("Boots")
-        .areaLevel("<=", earlyBootMaxAreaLevel)
-        .rarity("==", "Rare")
-        .mixin(styleMixin(filterStyles.rareArmour))
-        .customSound(soundFile("rare_boots.mp3")),
-      rule().itemClass("Boots").rarity("==", "Rare").mixin(styleMixin(filterStyles.rareArmour)),
-      ...preferredArmourTypes.map((baseType) =>
-        rule()
-          .itemClass(...ARMOUR_CLASSES)
-          .areaLevel("<=", maxAreaLevel)
-          .rarity("==", "Rare")
-          .mixin(styleMixin(filterStyles.rareArmour))
-          .mixin(defenceMixinMap[baseType]),
-      ),
-      rule()
-        .itemClass(...ARMOUR_CLASSES)
-        .rarity("==", "Rare")
-        .areaLevel("<=", maxAreaLevel)
-        .size(45),
-      rule()
-        .itemClass(...jewelleryClasses)
-        .rarity("==", "Rare")
-        .areaLevel("<=", maxAreaLevel)
-        .size(45),
-      shieldConfig.enabled &&
-        (() => {
-          const builtRule = rule().itemClass("Shields").rarity("==", "Rare").size(45)
-
-          if (shieldConfig.maxAreaLevel !== undefined) {
-            builtRule.areaLevel("<=", shieldConfig.maxAreaLevel)
-          }
-
-          return builtRule
-        })(),
-      weaponItemClasses.length > 0 &&
-        rule()
-          .itemClass(...weaponItemClasses)
-          .rarity("==", "Rare")
-          .icon("Cyan", "UpsideDownHouse")
-          .mixin(styleMixin(filterStyles.highlightedEquipment)),
-      rule().width("==", 2).height(">=", 4).areaLevel("<=", 12).rarity("==", "Rare").size(40),
-      rule().width("==", 2).height(">=", 4).areaLevel("<=", maxAreaLevel).rarity("==", "Rare").size(35),
-      rule().width("==", 2).height("==", 3).areaLevel("<=", 12).rarity("==", "Rare").size(45),
-      rule().width("==", 2).height("==", 3).areaLevel("<=", maxAreaLevel).rarity("==", "Rare").size(40),
-      rule().width("<=", 2).height("==", 1).rarity("==", "Rare").size(45),
-      rule().areaLevel("<=", maxAreaLevel).rarity("==", "Rare").size(40),
-    ),
-  )
-}
-
 export const jewellery = () =>
   withHeading(
     "Jewellery",
@@ -247,84 +178,12 @@ export const jewellery = () =>
         .mixin(styleMixin(filterStyles.rareAccessory))
         .customSound(soundFile("rare_amethyst.mp3")),
       rule()
-        .baseType("Amethyst")
-        .itemClass("Rings")
-        .rarity("<=", "Rare")
-        .icon("Cyan", "Moon")
-        .mixin(styleMixin(filterStyles.rareAccessory))
-        .customSound(soundFile("amethyst.mp3")),
-      rule()
-        .baseType("Iron")
-        .itemClass("Rings")
-        .areaLevel("<=", 16)
-        .rarity("<=", "Rare")
-        .icon("Purple", "Moon")
-        .mixin(styleMixin(filterStyles.rareAccessory))
-        .customSound(soundFile("iron.mp3")),
-      rule().baseType("Iron").itemClass("Rings").rarity("==", "Rare").icon("Purple", "Moon").mixin(styleMixin(filterStyles.rareAccessory)),
-      rule()
-        .baseType("Coral")
-        .itemClass("Rings")
-        .areaLevel("<=", 16)
-        .rarity("<=", "Magic")
-        .icon("Purple", "Moon")
-        .mixin(styleMixin(filterStyles.rareAccessory)),
-      rule().baseType("Coral").itemClass("Rings").rarity("==", "Rare").icon("Purple", "Moon").mixin(styleMixin(filterStyles.rareAccessory)),
-      rule()
-        .baseType("Sapphire")
-        .itemClass("Rings")
-        .areaLevel("<=", 45)
-        .rarity("<=", "Rare")
-        .icon("Cyan", "Moon")
-        .mixin(styleMixin(filterStyles.rareAccessory))
-        .customSound(soundFile("sapphire.mp3")),
-      rule()
-        .baseType("Ruby")
-        .itemClass("Rings")
-        .areaLevel("<=", 45)
-        .rarity("<=", "Rare")
-        .icon("Red", "Moon")
-        .mixin(styleMixin(filterStyles.rareAccessory))
-        .customSound(soundFile("ruby.mp3")),
-      rule()
-        .baseType("Topaz")
-        .itemClass("Rings")
-        .areaLevel("<=", 45)
-        .rarity("<=", "Rare")
-        .icon("Yellow", "Moon")
-        .mixin(styleMixin(filterStyles.rareAccessory))
-        .customSound(soundFile("topaz.mp3")),
-      rule()
-        .baseType("Two-Stone")
-        .itemClass("Rings")
-        .areaLevel("<=", 45)
-        .rarity("<=", "Rare")
-        .icon("Green", "Moon")
-        .mixin(styleMixin(filterStyles.rareAccessory))
-        .customSound(soundFile("two_stone.mp3")),
-      rule()
         .baseType("Leather")
         .itemClass("Belts")
         .rarity("==", "Rare")
         .icon("Yellow", "Pentagon")
         .mixin(styleMixin(filterStyles.rareAccessory))
         .customSound(soundFile("rare_leather.mp3")),
-      rule()
-        .baseType("Leather")
-        .itemClass("Belts")
-        .areaLevel("<=", 45)
-        .rarity("==", "Magic")
-        .icon("Yellow", "Pentagon")
-        .mixin(styleMixin(filterStyles.rareAccessory))
-        .customSound(soundFile("magic_leather.mp3")),
-      rule()
-        .baseType("Leather")
-        .itemClass("Belts")
-        .areaLevel("<=", 28)
-        .rarity("==", "Normal")
-        .icon("Yellow", "Pentagon")
-        .mixin(styleMixin(filterStyles.rareAccessory))
-        .customSound(soundFile("leather_belt.mp3")),
       rule()
         .baseType("Heavy")
         .itemClass("Belts")
@@ -333,59 +192,186 @@ export const jewellery = () =>
         .mixin(styleMixin(filterStyles.rareAccessory))
         .customSound(soundFile("rare_heavy.mp3")),
       rule()
-        .baseType("Heavy")
-        .itemClass("Belts")
-        .areaLevel("<=", 45)
-        .rarity("==", "Magic")
-        .icon("Orange", "Pentagon")
-        .mixin(styleMixin(filterStyles.rareAccessory))
-        .customSound(soundFile("magic_heavy.mp3")),
-      rule()
-        .baseType("Heavy")
-        .itemClass("Belts")
-        .areaLevel("<=", 28)
-        .rarity("==", "Normal")
-        .icon("Orange", "Pentagon")
-        .mixin(styleMixin(filterStyles.rareAccessory))
-        .customSound(soundFile("heavy_belt.mp3")),
-      rule()
         .baseType("Rustic")
         .itemClass("Belts")
         .rarity("==", "Rare")
         .icon("White", "Pentagon")
         .mixin(styleMixin(filterStyles.rareAccessory))
         .customSound(soundFile("rare_rustic.mp3")),
-      rule().baseType("Chain").itemClass("Belts").areaLevel("<=", 12).mixin(styleMixin(filterStyles.rareAccessory)),
-      rule()
-        .baseType("Amber")
-        .itemClass("Amulets")
-        .areaLevel("<=", 24)
-        .icon("Red", "Cross")
-        .mixin(styleMixin(filterStyles.rareAccessory))
-        .customSound(soundFile("amber.mp3")),
-      rule()
-        .baseType("Lapis")
-        .itemClass("Amulets")
-        .areaLevel("<=", 24)
-        .icon("Red", "Cross")
-        .mixin(styleMixin(filterStyles.rareAccessory))
-        .customSound(soundFile("lapis.mp3")),
-      rule()
-        .baseType("Jade")
-        .itemClass("Amulets")
-        .areaLevel("<=", 24)
-        .icon("Red", "Cross")
-        .mixin(styleMixin(filterStyles.rareAccessory))
-        .customSound(soundFile("jade.mp3")),
       rule()
         .baseType("Amber", "Jade", "Lapis", "Turquoise", "Onyx", "Agate", "Citrine")
         .itemClass("Amulets")
         .rarity("==", "Rare")
         .mixin(styleMixin(filterStyles.rareAccessory)),
+      rule()
+        .baseType("Amethyst")
+        .itemClass("Rings")
+        .rarity("==", "Magic")
+        .icon("Cyan", "Moon")
+        .mixin(styleMixin(filterStyles.magicAccessory))
+        .customSound(soundFile("amethyst.mp3")),
+      rule()
+        .baseType("Amethyst")
+        .itemClass("Rings")
+        .rarity("==", "Normal")
+        .icon("Cyan", "Moon")
+        .mixin(styleMixin(filterStyles.accessory))
+        .customSound(soundFile("amethyst.mp3")),
+      rule()
+        .baseType("Iron")
+        .itemClass("Rings")
+        .areaLevel("<=", filterDefaults.jewellery.basicRingMaxAreaLevel)
+        .rarity("==", "Magic")
+        .icon("Purple", "Moon")
+        .mixin(styleMixin(filterStyles.magicAccessory))
+        .customSound(soundFile("Iron.mp3")),
+      rule()
+        .baseType("Iron")
+        .itemClass("Rings")
+        .areaLevel("<=", filterDefaults.jewellery.basicRingMaxAreaLevel)
+        .rarity("==", "Normal")
+        .icon("Purple", "Moon")
+        .mixin(styleMixin(filterStyles.accessory))
+        .customSound(soundFile("Iron.mp3")),
+      rule()
+        .baseType("Coral")
+        .itemClass("Rings")
+        .areaLevel("<=", filterDefaults.jewellery.basicRingMaxAreaLevel)
+        .rarity("==", "Magic")
+        .icon("Purple", "Moon")
+        .mixin(styleMixin(filterStyles.magicAccessory)),
+      rule()
+        .baseType("Coral")
+        .itemClass("Rings")
+        .areaLevel("<=", filterDefaults.jewellery.basicRingMaxAreaLevel)
+        .rarity("==", "Normal")
+        .icon("Purple", "Moon")
+        .mixin(styleMixin(filterStyles.accessory)),
+      rule()
+        .baseType("Sapphire")
+        .itemClass("Rings")
+        .areaLevel("<=", filterDefaults.jewellery.elementalRingMaxAreaLevel)
+        .rarity("==", "Magic")
+        .icon("Cyan", "Moon")
+        .mixin(styleMixin(filterStyles.magicAccessory))
+        .customSound(soundFile("sapphire.mp3")),
+      rule()
+        .baseType("Sapphire")
+        .itemClass("Rings")
+        .areaLevel("<=", filterDefaults.jewellery.elementalRingMaxAreaLevel)
+        .rarity("==", "Normal")
+        .icon("Cyan", "Moon")
+        .mixin(styleMixin(filterStyles.accessory))
+        .customSound(soundFile("sapphire.mp3")),
+      rule()
+        .baseType("Ruby")
+        .itemClass("Rings")
+        .areaLevel("<=", filterDefaults.jewellery.elementalRingMaxAreaLevel)
+        .rarity("==", "Magic")
+        .icon("Red", "Moon")
+        .mixin(styleMixin(filterStyles.magicAccessory))
+        .customSound(soundFile("ruby.mp3")),
+      rule()
+        .baseType("Ruby")
+        .itemClass("Rings")
+        .areaLevel("<=", filterDefaults.jewellery.elementalRingMaxAreaLevel)
+        .rarity("==", "Normal")
+        .icon("Red", "Moon")
+        .mixin(styleMixin(filterStyles.accessory))
+        .customSound(soundFile("ruby.mp3")),
+      rule()
+        .baseType("Topaz")
+        .itemClass("Rings")
+        .areaLevel("<=", filterDefaults.jewellery.elementalRingMaxAreaLevel)
+        .rarity("==", "Magic")
+        .icon("Yellow", "Moon")
+        .mixin(styleMixin(filterStyles.magicAccessory))
+        .customSound(soundFile("topaz.mp3")),
+      rule()
+        .baseType("Topaz")
+        .itemClass("Rings")
+        .areaLevel("<=", filterDefaults.jewellery.elementalRingMaxAreaLevel)
+        .rarity("==", "Normal")
+        .icon("Yellow", "Moon")
+        .mixin(styleMixin(filterStyles.accessory))
+        .customSound(soundFile("topaz.mp3")),
+      rule()
+        .baseType("Two-Stone")
+        .itemClass("Rings")
+        .areaLevel("<=", filterDefaults.jewellery.elementalRingMaxAreaLevel)
+        .rarity("==", "Magic")
+        .icon("Green", "Moon")
+        .mixin(styleMixin(filterStyles.magicAccessory))
+        .customSound(soundFile("two_stone.mp3")),
+      rule()
+        .baseType("Two-Stone")
+        .itemClass("Rings")
+        .areaLevel("<=", filterDefaults.jewellery.elementalRingMaxAreaLevel)
+        .rarity("==", "Normal")
+        .icon("Green", "Moon")
+        .mixin(styleMixin(filterStyles.accessory))
+        .customSound(soundFile("two_stone.mp3")),
+      rule()
+        .baseType("Leather")
+        .itemClass("Belts")
+        .areaLevel("<=", filterDefaults.jewellery.beltMaxAreaLevel)
+        .rarity("==", "Magic")
+        .icon("Yellow", "Pentagon")
+        .mixin(styleMixin(filterStyles.magicAccessory))
+        .customSound(soundFile("magic_leather.mp3")),
+      rule()
+        .baseType("Leather")
+        .itemClass("Belts")
+        .areaLevel("<=", filterDefaults.jewellery.beltMaxAreaLevel)
+        .rarity("==", "Normal")
+        .icon("Yellow", "Pentagon")
+        .mixin(styleMixin(filterStyles.accessory))
+        .customSound(soundFile("leather_belt.mp3")),
+      rule()
+        .baseType("Heavy")
+        .itemClass("Belts")
+        .areaLevel("<=", filterDefaults.jewellery.beltMaxAreaLevel)
+        .rarity("==", "Magic")
+        .icon("Orange", "Pentagon")
+        .mixin(styleMixin(filterStyles.magicAccessory))
+        .customSound(soundFile("magic_heavy.mp3")),
+      rule()
+        .baseType("Heavy")
+        .itemClass("Belts")
+        .areaLevel("<=", filterDefaults.jewellery.beltMaxAreaLevel)
+        .rarity("==", "Normal")
+        .icon("Orange", "Pentagon")
+        .mixin(styleMixin(filterStyles.accessory))
+        .customSound(soundFile("heavy_belt.mp3")),
+      rule().itemClass("Belts").rarity("==", "Rare").mixin(styleMixin(filterStyles.accessory)),
+      rule()
+        .baseType("Amber")
+        .itemClass("Amulets")
+        .areaLevel("<=", filterDefaults.jewellery.amuletMaxAreaLevel)
+        .icon("Red", "Cross")
+        .mixin(styleMixin(filterStyles.accessory))
+        .customSound(soundFile("amber.mp3")),
+      rule()
+        .baseType("Lapis")
+        .itemClass("Amulets")
+        .areaLevel("<=", filterDefaults.jewellery.amuletMaxAreaLevel)
+        .icon("Red", "Cross")
+        .mixin(styleMixin(filterStyles.accessory))
+        .customSound(soundFile("lapis.mp3")),
+      rule()
+        .baseType("Jade")
+        .itemClass("Amulets")
+        .areaLevel("<=", filterDefaults.jewellery.amuletMaxAreaLevel)
+        .icon("Red", "Cross")
+        .mixin(styleMixin(filterStyles.accessory))
+        .customSound(soundFile("jade.mp3")),
     ),
   )
 
-export const chromaticItems = ({ areaLevelCap = filterDefaults.chromaticItems.areaLevelCap }: ChromaticItemsConfig = {}) =>
+export const chromaticItems = ({
+  smallMaxAreaLevel = filterDefaults.chromaticItems.smallMaxAreaLevel,
+  largeMaxAreaLevel = filterDefaults.chromaticItems.largeMaxAreaLevel,
+}: ChromaticItemsConfig = {}) =>
   withHeading(
     "Chromatic Items",
     compileRules(
@@ -393,21 +379,23 @@ export const chromaticItems = ({ areaLevelCap = filterDefaults.chromaticItems.ar
         .width("==", 1)
         .height("==", 3)
         .socketGroup("==", "RGB")
+        .areaLevel("<=", smallMaxAreaLevel)
         .mixin(styleMixin(filterStyles.chromatic))
-        .customSound(soundFile("pop.mp3")),
+        .customSound(soundFile("chrome_recipe.mp3")),
       rule()
         .width("==", 2)
         .height("==", 2)
         .socketGroup("==", "RGB")
+        .areaLevel("<=", smallMaxAreaLevel)
         .mixin(styleMixin(filterStyles.chromatic))
-        .customSound(soundFile("pop.mp3")),
+        .customSound(soundFile("chrome_recipe.mp3")),
       rule()
         .width("==", 2)
         .height("==", 4)
         .socketGroup("==", "RGB")
-        .areaLevel("<=", areaLevelCap)
+        .areaLevel("<=", largeMaxAreaLevel)
         .mixin(styleMixin(filterStyles.chromatic))
-        .customSound(soundFile("pop.mp3")),
+        .customSound(soundFile("chrome_recipe.mp3")),
     ),
   )
 
@@ -472,3 +460,107 @@ export const tinctures = ({ baseTypes = filterDefaults.tinctures.baseTypes }: Ti
         .sound(6),
     ),
   )
+
+export const rareItems = ({
+  preferredArmourTypes,
+  preferredWeaponItemClasses = [],
+  weaponItemClasses = preferredWeaponItemClasses,
+  maxAreaLevel = filterDefaults.rareItems.maxAreaLevel,
+  earlyBootMaxAreaLevel = filterDefaults.rareItems.earlyBootMaxAreaLevel,
+  shieldProgression,
+}: RareItemsConfig & BuildProfile) => {
+  const earlyMaxAreaLevel = filterDefaults.campaign.earlyMaxAreaLevel
+  const partOneMaxAreaLevel = maxAreaLevel
+  const shieldConfig = normalizeShieldProgressionConfig(shieldProgression)
+  const preferredRareItemClasses = shieldConfig.enabled ? [...ARMOUR_CLASSES, "Shields"] : ARMOUR_CLASSES
+
+  return withHeading(
+    "Rare Items",
+    compileRules(
+      rule()
+        .itemClass("Boots")
+        .areaLevel("<=", earlyBootMaxAreaLevel)
+        .rarity("==", "Rare")
+        .mixin(styleMixin(filterStyles.rareArmour))
+        .customSound(soundFile("rare_boots.mp3")),
+      rule().itemClass("Boots").rarity("==", "Rare").mixin(styleMixin(filterStyles.rareArmour)),
+      ...preferredArmourTypes.map((baseType) =>
+        rule()
+          .itemClass(...preferredRareItemClasses)
+          .areaLevel("<=", maxAreaLevel)
+          .rarity("==", "Rare")
+          .mixin(styleMixin(filterStyles.rareArmour))
+          .mixin(defenceMixinMap[baseType]),
+      ),
+      weaponItemClasses.length > 0 &&
+        rule()
+          .itemClass(...weaponItemClasses)
+          .rarity("==", "Rare")
+          .icon("Cyan", "UpsideDownHouse")
+          .mixin(styleMixin(filterStyles.highlightedEquipment)),
+      rule().width("==", 2).height(">=", 4).areaLevel("<=", earlyMaxAreaLevel).rarity("==", "Rare").size(40),
+      rule().width("==", 2).height(">=", 4).areaLevel("<=", partOneMaxAreaLevel).rarity("==", "Rare").size(35),
+      rule().width("==", 2).height(">=", 4).rarity("==", "Rare").size(30),
+      rule().width("==", 2).height("==", 3).areaLevel("<=", earlyMaxAreaLevel).rarity("==", "Rare").size(45),
+      rule().width("==", 2).height("==", 3).areaLevel("<=", partOneMaxAreaLevel).rarity("==", "Rare").size(40),
+      rule().width("==", 2).height("==", 3).rarity("==", "Rare").size(35),
+      rule().width("==", 1).height("==", 1).rarity("==", "Rare").size(45),
+      rule().areaLevel("<=", earlyMaxAreaLevel).rarity("==", "Rare").size(45),
+      rule().areaLevel("<=", partOneMaxAreaLevel).rarity("==", "Rare").size(40),
+      rule().rarity("==", "Rare").size(38),
+    ),
+  )
+}
+
+export const magicItems = ({
+  preferredWeaponItemClasses = [],
+  weaponItemClasses = preferredWeaponItemClasses,
+  weaponBaseTypes = [],
+}: FallbackItemsConfig & Partial<BuildProfile> = {}) => {
+  const itemClasses = [...SOCKETABLE_CLASSES, ...weaponItemClasses]
+  const magicItemMaxAreaLevel = filterDefaults.early.magicItemMaxAreaLevel
+
+  return withHeading(
+    "Magic Items",
+    compileRules(
+      rule()
+        .rarity("==", "Magic")
+        .itemClass(...itemClasses)
+        .areaLevel("<=", magicItemMaxAreaLevel)
+        .size(40),
+      weaponBaseTypes.length > 0 &&
+        rule()
+          .rarity("==", "Magic")
+          .baseType(...weaponBaseTypes)
+          .areaLevel("<=", magicItemMaxAreaLevel)
+          .size(40),
+    ),
+  )
+}
+
+export const normalItems = ({
+  preferredWeaponItemClasses = [],
+  weaponItemClasses = preferredWeaponItemClasses,
+  weaponBaseTypes = [],
+}: FallbackItemsConfig & Partial<BuildProfile> = {}) => {
+  const itemClasses = [...SOCKETABLE_CLASSES, ...weaponItemClasses]
+  const normalItemMaxAreaLevel = filterDefaults.early.normalItemMaxAreaLevel
+
+  return withHeading(
+    "Normal Items",
+    compileRules(
+      rule()
+        .rarity("==", "Normal")
+        .itemClass(...itemClasses)
+        .areaLevel("<=", normalItemMaxAreaLevel)
+        .size(40),
+      weaponBaseTypes.length > 0 &&
+        rule()
+          .rarity("==", "Normal")
+          .baseType(...weaponBaseTypes)
+          .areaLevel("<=", normalItemMaxAreaLevel)
+          .size(40),
+      rule().itemClass("Belts").rarity("==", "Normal").areaLevel("<=", normalItemMaxAreaLevel).mixin(styleMixin(filterStyles.accessory)),
+    ),
+  )
+}

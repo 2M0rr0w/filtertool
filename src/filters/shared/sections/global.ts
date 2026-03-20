@@ -65,5 +65,4 @@ export const hideEquipment = () =>
     ),
   )
 
-export const showUnknownItems = () =>
-  withHeading("Show Unknown Items", compileRules(rule().mixin(styleMixin(filterStyles.unknownItem)).icon("Yellow", "Star").sound(7)))
+export const showUnknownItems = () => withHeading("Show Unknown Items", compileRules(rule().mixin(styleMixin(filterStyles.unknownItem))))

@@ -25,15 +25,29 @@ export const twilightStrand = () =>
     ),
   )
 
-export const earlySocketFallbacks = ({ weaponItemClasses = [], weaponBaseTypes = [] }: EarlySocketFallbacksConfig = {}) => {
+export const earlySocketFallbacks = ({
+  preferredWeaponItemClasses = [],
+  weaponItemClasses = preferredWeaponItemClasses,
+  weaponBaseTypes = [],
+}: EarlySocketFallbacksConfig & Partial<BuildProfile> = {}) => {
   const itemClasses = [...SOCKETABLE_CLASSES, ...weaponItemClasses]
-  const threeSocketMaxAreaLevel = filterDefaults.early.earlyMaxAreaLevel
-  const magicItemMaxAreaLevel = filterDefaults.early.magicItemMaxAreaLevel
-  const normalItemMaxAreaLevel = filterDefaults.early.normalItemMaxAreaLevel
+  const twoSocketMaxAreaLevel = filterDefaults.early.twoSocketMaxAreaLevel
+  const threeSocketMaxAreaLevel = filterDefaults.campaign.earlyMaxAreaLevel
 
   return withHeading(
     "Early Socket Fallbacks",
     compileRules(
+      rule()
+        .sockets("==", 2)
+        .itemClass(...itemClasses)
+        .areaLevel("<=", twoSocketMaxAreaLevel)
+        .size(40),
+      weaponBaseTypes.length > 0 &&
+        rule()
+          .sockets("==", 2)
+          .baseType(...weaponBaseTypes)
+          .areaLevel("<=", twoSocketMaxAreaLevel)
+          .size(40),
       rule()
         .sockets("==", 3)
         .itemClass(...itemClasses)
@@ -45,46 +59,13 @@ export const earlySocketFallbacks = ({ weaponItemClasses = [], weaponBaseTypes =
           .baseType(...weaponBaseTypes)
           .areaLevel("<=", threeSocketMaxAreaLevel)
           .size(45),
-      rule()
-        .socketGroup(">=", "G", "B", "R")
-        .itemClass(...itemClasses)
-        .areaLevel("<=", magicItemMaxAreaLevel)
-        .size(40),
-      weaponBaseTypes.length > 0 &&
-        rule()
-          .socketGroup(">=", "G", "B", "R")
-          .baseType(...weaponBaseTypes)
-          .areaLevel("<=", magicItemMaxAreaLevel)
-          .size(40),
-      rule()
-        .rarity("==", "Magic")
-        .itemClass(...itemClasses)
-        .areaLevel("<=", magicItemMaxAreaLevel)
-        .size(40),
-      weaponBaseTypes.length > 0 &&
-        rule()
-          .rarity("==", "Magic")
-          .baseType(...weaponBaseTypes)
-          .areaLevel("<=", magicItemMaxAreaLevel)
-          .size(40),
-      rule()
-        .rarity("==", "Normal")
-        .itemClass(...itemClasses)
-        .areaLevel("<=", normalItemMaxAreaLevel)
-        .size(40),
-      weaponBaseTypes.length > 0 &&
-        rule()
-          .rarity("==", "Normal")
-          .baseType(...weaponBaseTypes)
-          .areaLevel("<=", normalItemMaxAreaLevel)
-          .size(40),
     ),
   )
 }
 
 export const early = ({
   weaponHighlights = [],
-  earlyMaxAreaLevel = filterDefaults.early.earlyMaxAreaLevel,
+  earlyMaxAreaLevel = filterDefaults.campaign.earlyMaxAreaLevel,
   showRustic = filterDefaults.early.showRustic,
   includeMomentumColors = filterDefaults.early.includeMomentumColors,
   momentumColors,
@@ -116,22 +97,24 @@ export const early = ({
     "Early",
     compileRules(
       ...weaponHighlights.flatMap(buildWeaponHighlightRules),
-      (() => {
-        const builtRule = rule().itemClass("Shields").socketGroup(">=", "RG").mixin(styleMixin(filterStyles.earlyShieldLink))
-        builtRule.areaLevel("<=", earlyMaxAreaLevel)
-        return builtRule
-      })(),
-      (() => {
-        const builtRule = rule().itemClass("Shields").baseES("==", 0).mixin(styleMixin(filterStyles.earlyShieldBase))
-        builtRule.areaLevel("<=", earlyMaxAreaLevel)
-        return builtRule
-      })(),
+      shieldConfig.enabled &&
+        (() => {
+          const builtRule = rule().itemClass("Shields").socketGroup(">=", "RG").mixin(styleMixin(filterStyles.earlyShieldLink))
+          builtRule.areaLevel("<=", earlyMaxAreaLevel)
+          return builtRule
+        })(),
+      shieldConfig.enabled &&
+        (() => {
+          const builtRule = rule().itemClass("Shields").baseES("==", 0).mixin(styleMixin(filterStyles.earlyShieldBase))
+          builtRule.areaLevel("<=", earlyMaxAreaLevel)
+          return builtRule
+        })(),
       showRustic &&
         (() => {
           const builtRule = rule()
             .baseType("Rustic")
             .itemClass("Belts")
-            .areaLevel("<=", 12)
+            .areaLevel("<=", earlyMaxAreaLevel)
             .icon("White", "Pentagon")
             .mixin(styleMixin(filterStyles.rareAccessory))
             .customSound(soundFile("rustic.mp3"))

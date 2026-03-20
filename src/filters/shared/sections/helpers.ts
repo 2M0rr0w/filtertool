@@ -99,6 +99,7 @@ export type WeaponBaseType =
 
 export type BuildProfile = {
   preferredArmourTypes: readonly DefenceBaseType[]
+  preferredWeaponItemClasses?: readonly WeaponItemClass[]
   shieldProgression?: ShieldProgressionConfig
 }
 
@@ -106,6 +107,8 @@ export type BuildSpecificOptions = {
   links: LinksConfig
   socketBases?: SocketBasesConfig
   rareItems?: RareItemsConfig
+  magicItems?: FallbackItemsConfig
+  normalItems?: FallbackItemsConfig
   tinctures?: TincturesConfig
   highlightedEquipment?: HighlightedEquipmentConfig
   early?: EarlyConfig
@@ -145,7 +148,8 @@ export type RareItemsConfig = {
 }
 
 export type ChromaticItemsConfig = {
-  areaLevelCap?: number
+  smallMaxAreaLevel?: number
+  largeMaxAreaLevel?: number
 }
 
 export type WeaponHighlightConfig = {
@@ -159,6 +163,7 @@ export type HighlightedBaseTypeConfig = {
   itemClasses?: readonly ItemClass[]
   rarityOperator?: Operator
   rarity?: Rarity
+  rarities?: readonly Rarity[]
   maxAreaLevel?: number
   soundId?: NumberRange<1, 17>
   soundFileName?: SoundFile
@@ -181,10 +186,12 @@ export type HighlightedEquipmentConfig = {
   highlights?: readonly HighlightedBaseTypeConfig[]
 }
 
-export type EarlySocketFallbacksConfig = {
+export type FallbackItemsConfig = {
   weaponItemClasses?: readonly WeaponItemClass[]
   weaponBaseTypes?: readonly WeaponBaseType[]
 }
+
+export type EarlySocketFallbacksConfig = FallbackItemsConfig
 
 export type ShieldProgressionMode = "none" | "early" | "full"
 
@@ -243,9 +250,6 @@ export const getSocketPatternSoundPrefix = (pattern: ThreeLinkPattern | FourLink
         .map(({ color, count }) => `${count}${color.toLowerCase()}`)
         .join("")
 
-export const getShieldThreeLinkSoundPrefix = (pattern: ThreeLinkPattern) =>
-  pattern.split("").filter((entry) => entry === "G").length === 2 && pattern.includes("R") ? "2g1r" : undefined
-
 export const genericFourLinkSoundMap: Record<DefenceBaseType, string> = {
   "armour": "4_link_armour",
   "armour-evasion": "4_link_armour_evasion",
@@ -265,11 +269,11 @@ export const normalizeGenericFourLinkConfig = (entry: DefenceBaseType | GenericF
 
 export const normalizeShieldProgressionConfig = (shieldProgression?: ShieldProgressionConfig) => {
   if (!shieldProgression || shieldProgression === "none") {
-    return { enabled: false, maxAreaLevel: filterDefaults.shieldProgression.earlyMaxAreaLevel }
+    return { enabled: false, maxAreaLevel: filterDefaults.campaign.earlyMaxAreaLevel }
   }
 
   if (shieldProgression === "early") {
-    return { enabled: true, maxAreaLevel: filterDefaults.shieldProgression.earlyMaxAreaLevel }
+    return { enabled: true, maxAreaLevel: filterDefaults.campaign.earlyMaxAreaLevel }
   }
 
   if (shieldProgression === "full") {
@@ -279,7 +283,7 @@ export const normalizeShieldProgressionConfig = (shieldProgression?: ShieldProgr
   const mode = shieldProgression.mode ?? "none"
 
   if (mode === "none") {
-    return { enabled: false, maxAreaLevel: shieldProgression.maxAreaLevel ?? filterDefaults.shieldProgression.earlyMaxAreaLevel }
+    return { enabled: false, maxAreaLevel: shieldProgression.maxAreaLevel ?? filterDefaults.campaign.earlyMaxAreaLevel }
   }
 
   if (mode === "full") {
@@ -288,7 +292,7 @@ export const normalizeShieldProgressionConfig = (shieldProgression?: ShieldProgr
 
   return {
     enabled: true,
-    maxAreaLevel: shieldProgression.maxAreaLevel ?? filterDefaults.shieldProgression.earlyMaxAreaLevel,
+    maxAreaLevel: shieldProgression.maxAreaLevel ?? filterDefaults.campaign.earlyMaxAreaLevel,
   }
 }
 
@@ -358,35 +362,45 @@ export const buildGenericFourLinkRules = ({
       .customSound(soundFile(`${genericFourLinkSoundMap[defenceType]}_${SLOT_SOUND_SUFFIX[itemClass]}.mp3`)),
   )
 
-export const buildHighlightedBaseTypeRule = ({
+export const buildHighlightedBaseTypeRules = ({
   baseTypes,
   itemClasses,
   rarityOperator,
   rarity,
+  rarities,
   maxAreaLevel,
   soundId,
   soundFileName,
 }: HighlightedBaseTypeConfig) => {
-  const builtRule = applyHighlightTargets(rule().icon("Cyan", "UpsideDownHouse").mixin(styleMixin(filterStyles.highlightedEquipment)), {
-    baseTypes,
-    itemClasses,
-  })
+  const appliedRarities = rarities?.length ? rarities : undefined
+  const buildRule = () => {
+    const builtRule = applyHighlightTargets(rule().icon("Cyan", "UpsideDownHouse").mixin(styleMixin(filterStyles.highlightedEquipment)), {
+      baseTypes,
+      itemClasses,
+    })
+
+    if (maxAreaLevel !== undefined) {
+      builtRule.areaLevel("<=", maxAreaLevel)
+    }
+
+    if (soundFileName) {
+      builtRule.customSound(soundFile(soundFileName))
+    } else if (soundId !== undefined) {
+      builtRule.sound(soundId)
+    }
+
+    return builtRule
+  }
+
+  if (appliedRarities) {
+    return appliedRarities.map((selectedRarity) => buildRule().rarity("==", selectedRarity))
+  }
 
   if (rarityOperator && rarity) {
-    builtRule.rarity(rarityOperator, rarity)
+    return [buildRule().rarity(rarityOperator, rarity)]
   }
 
-  if (maxAreaLevel !== undefined) {
-    builtRule.areaLevel("<=", maxAreaLevel)
-  }
-
-  if (soundFileName) {
-    builtRule.customSound(soundFile(soundFileName))
-  } else if (soundId !== undefined) {
-    builtRule.sound(soundId)
-  }
-
-  return builtRule
+  return [buildRule()]
 }
 
 // Section-specific data builders

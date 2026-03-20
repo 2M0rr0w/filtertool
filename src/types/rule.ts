@@ -18,6 +18,7 @@ export type HexColor = `#${string}`
 export type StyleData = {
   text?: HexColor
   background?: HexColor
+  backgroundOpacity?: number
   border?: HexColor
   size?: number
 }
