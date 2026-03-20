@@ -1,0 +1,16 @@
+import path from "path"
+
+export const SOUND_PACK_SOURCE_DIR = "sounds"
+const SOUND_PACK_TARGET_DIR = "poeft-sounds"
+
+const normalizeFolder = (folder: string) => folder.replace(/^[\\/]+|[\\/]+$/g, "")
+
+export const getSoundPackFolder = () => normalizeFolder(process.env.SOUNDS_FOLDER || SOUND_PACK_TARGET_DIR)
+
+export const soundFile = (file: string) => `${getSoundPackFolder()}/${file}`
+
+export const getSoundPackTargetDir = () => {
+  const filterPath = process.env.FILTER_PATH || ""
+  const soundPackFolder = getSoundPackFolder()
+  return filterPath ? path.join(filterPath, soundPackFolder) : soundPackFolder
+}
