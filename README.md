@@ -2,7 +2,7 @@
 
 Quickstart for building Path of Exile filters with shared sections and custom sounds.
 
-This tool is currently built with leveling filters in mind. Contributions that extend it are very welcome.
+This tool is currently built with leveling filters in mind. Any Contributions are very welcome.
 
 ## Prerequisites
 
@@ -30,10 +30,6 @@ FILTER_PATH="C:\Users\user\Documents\My Games\Path of Exile"
 For most standard filters, `config.ts` is the only file you need to touch. [`index.ts`](src/filters/example/index.ts) usually only needs changes if you want a different section layout or custom logic.
 
 5. Export your filter.
-
-```bash
-npm run export filtername
-```
 
 If your filter folder is `src/filters/yourfilter`, run:
 
@@ -67,7 +63,7 @@ FILTER_PATH="C:\Users\user\Documents\My Games\Path of Exile"
 SOUNDS_FOLDER="sounds"
 ```
 
-You can regenerate the sound file union and sync the sound pack manually with:
+You can sync the sound pack manually with:
 
 ```bash
 npm run generate-sounds
@@ -77,7 +73,6 @@ npm run generate-sounds
 
 - Most config fields have autocomplete for Path of Exile item classes, base types and link patterns
 - `soundFile("...")` also gets typed sound filename suggestions for literal filenames
-- `SOUNDS_FOLDER` only controls the target sound folder used by exported filters and by sound-pack syncing
 - Custom filter folders under `src/filters/` are gitignored by default, while the shared example template stays tracked
 
 ---
