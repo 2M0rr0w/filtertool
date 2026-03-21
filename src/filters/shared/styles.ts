@@ -16,7 +16,7 @@ export const baseFilterStyles = {
   earlyWeaponMagic:           { text: "#66B3FF", background: "#000000", border: "#00FFFF" },
   earlyWeaponNormal:          { text: "#D9FFFF", background: "#000000", border: "#00FFFF" },
   earlyShieldLink:            { text: "#000000", background: "#ffffff", border: "#ff0000" },
-  earlyShieldBase:            { text: "#000000", background: "#ffffff", border: "#000000" },
+  earlyShieldBase:            { text: "#000000", background: "#d2d2d2", border: "#000000" },
   momentum:                   { text: "#FFA500", background: "#320000", border: "#FF0000" },
   twoLink:                    { text: "#DADADA", background: "#000000", border: "#FFC800", backgroundOpacity: 0.9 },
   selectedTwoLink:            { text: "#FFFFFF", background: "#000000", border: "#FFC800" },
