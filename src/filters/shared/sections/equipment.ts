@@ -146,8 +146,24 @@ export const jewellery = ({
   elementalRingMaxAreaLevel = filterDefaults.jewellery.elementalRingMaxAreaLevel,
   beltMaxAreaLevel = filterDefaults.jewellery.beltMaxAreaLevel,
   amuletMaxAreaLevel = filterDefaults.jewellery.amuletMaxAreaLevel,
-}: JewelleryConfig = {}) =>
-  withHeading(
+}: JewelleryConfig = {}) => {
+  const buildAmuletRules = (baseType: "Amber" | "Lapis" | "Jade", soundFileName: string) =>
+    [
+      { rarity: "Rare" as const, style: filterStyles.rareAccessory },
+      { rarity: "Magic" as const, style: filterStyles.magicAccessory },
+      { rarity: "Normal" as const, style: filterStyles.accessory },
+    ].map(({ rarity, style }) =>
+      rule()
+        .baseType(baseType)
+        .itemClass("Amulets")
+        .areaLevel("<=", amuletMaxAreaLevel)
+        .rarity("==", rarity)
+        .icon("Red", "Cross")
+        .mixin(styleMixin(style))
+        .customSound(soundFile(soundFileName)),
+    )
+
+  return withHeading(
     "Jewellery",
     compileRules(
       rule()
@@ -326,39 +342,9 @@ export const jewellery = ({
         .mixin(styleMixin(filterStyles.accessory))
         .customSound(soundFile("heavy_belt.mp3")),
       rule().itemClass("Belts").rarity("==", "Rare").mixin(styleMixin(filterStyles.accessory)),
-      ...(amulets.includes("Amber")
-        ? [
-            rule()
-              .baseType("Amber")
-              .itemClass("Amulets")
-              .areaLevel("<=", amuletMaxAreaLevel)
-              .icon("Red", "Cross")
-              .mixin(styleMixin(filterStyles.accessory))
-              .customSound(soundFile("amber.mp3")),
-          ]
-        : []),
-      ...(amulets.includes("Lapis")
-        ? [
-            rule()
-              .baseType("Lapis")
-              .itemClass("Amulets")
-              .areaLevel("<=", amuletMaxAreaLevel)
-              .icon("Red", "Cross")
-              .mixin(styleMixin(filterStyles.accessory))
-              .customSound(soundFile("lapis.mp3")),
-          ]
-        : []),
-      ...(amulets.includes("Jade")
-        ? [
-            rule()
-              .baseType("Jade")
-              .itemClass("Amulets")
-              .areaLevel("<=", amuletMaxAreaLevel)
-              .icon("Red", "Cross")
-              .mixin(styleMixin(filterStyles.accessory))
-              .customSound(soundFile("jade.mp3")),
-          ]
-        : []),
+      ...(amulets.includes("Amber") ? buildAmuletRules("Amber", "amber.mp3") : []),
+      ...(amulets.includes("Lapis") ? buildAmuletRules("Lapis", "lapis.mp3") : []),
+      ...(amulets.includes("Jade") ? buildAmuletRules("Jade", "jade.mp3") : []),
       rule()
         .baseType("Amber", "Jade", "Lapis", "Turquoise", "Onyx", "Agate", "Citrine")
         .itemClass("Amulets")
@@ -366,6 +352,7 @@ export const jewellery = ({
         .mixin(styleMixin(filterStyles.rareAccessory)),
     ),
   )
+}
 
 export const chromaticItems = ({
   smallMaxAreaLevel = filterDefaults.chromaticItems.smallMaxAreaLevel,
