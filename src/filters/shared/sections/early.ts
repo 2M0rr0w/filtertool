@@ -119,7 +119,7 @@ export const early = ({
           .itemClass("Belts")
           .areaLevel("<=", earlyMaxAreaLevel)
           .icon("White", "Pentagon")
-          .mixin(styleMixin(filterStyles.rareAccessory))
+          .mixin(styleMixin(filterStyles.rareJewellery))
           .customSound(soundFile("rustic.mp3")),
       ...(includeMomentumColors
         ? [

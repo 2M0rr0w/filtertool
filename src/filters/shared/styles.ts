@@ -1,6 +1,6 @@
 import type { Color, Mixin, Shape, StyleData } from "../../types"
-export { getSoundPackFolder, soundFile } from "../../sounds"
 import { loadOptionalOverride, mergeDeep } from "./user-overrides"
+export { getSoundPackFolder, soundFile } from "../../sounds"
 
 export const DEFAULT_STYLE_SETTINGS = {
   size: 45,
@@ -32,9 +32,9 @@ export const baseFilterStyles = {
   portal:                     { text: "#6A94FD", background: "#000000", border: "#6A94FD" },
   gem:                        { text: "#00FFFF", background: "#000000", border: "#000000" },
   chromatic:                  { text: "#F789FF", background: "#000000", border: "#F789FF", backgroundOpacity: 0.9, size: 40 },
-  accessory:                  { text: "#F5D8FF", background: "#320046", border: "#C000FF" },
-  magicAccessory:             { text: "#66B3FF", background: "#320046", border: "#C000FF" },
-  rareAccessory:              { text: "#FFF34D", background: "#320046", border: "#C000FF" },
+  jewellery:                  { text: "#F5D8FF", background: "#320046", border: "#C000FF" },
+  magicJewellery:             { text: "#66B3FF", background: "#320046", border: "#C000FF" },
+  rareJewellery:              { text: "#FFF34D", background: "#320046", border: "#C000FF" },
   rareArmour:                 { text: "#FFF34D", background: "#322800", border: "#FFF34D" },
   highlightedEquipment:       { text: "#005EFF", background: "#001928", border: "#00FFFF" },
   highlightedEquipmentRare:   { text: "#FFFF00", background: "#001515", border: "#00FFFF" },

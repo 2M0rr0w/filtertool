@@ -8,15 +8,16 @@ import {
   buildHighlightedBaseTypeRules,
   buildItemClassSocketRules,
   BuildProfile,
-  LEVELING_AMULETS,
   buildUtilityFlaskRules,
   ChromaticItemsConfig,
   compileRules,
   defenceMixinMap,
+  FourLinkPattern,
   getShieldProgressionMode,
   getSocketPatternSoundPrefix,
   HighlightedEquipmentConfig,
   JewelleryConfig,
+  LEVELING_AMULETS,
   LinksConfig,
   MagicItemsConfig,
   NormalItemsConfig,
@@ -26,10 +27,9 @@ import {
   normalizeSocketPatternConfig,
   RareItemsConfig,
   SOCKETABLE_CLASSES,
-  TwoLinkPattern,
   ThreeLinkPattern,
-  FourLinkPattern,
   TincturesConfig,
+  TwoLinkPattern,
   withHeading,
 } from "./helpers"
 
@@ -154,9 +154,9 @@ export const jewellery = ({
 }: JewelleryConfig = {}) => {
   const buildAmuletRules = (baseType: string, soundFileName: string) =>
     [
-      { rarity: "Rare" as const, style: filterStyles.rareAccessory },
-      { rarity: "Magic" as const, style: filterStyles.magicAccessory },
-      { rarity: "Normal" as const, style: filterStyles.accessory },
+      { rarity: "Rare" as const, style: filterStyles.rareJewellery },
+      { rarity: "Magic" as const, style: filterStyles.magicJewellery },
+      { rarity: "Normal" as const, style: filterStyles.jewellery },
     ].map(({ rarity, style }) =>
       rule()
         .baseType(baseType)
@@ -176,49 +176,49 @@ export const jewellery = ({
         .itemClass("Rings")
         .rarity("==", "Rare")
         .icon("Pink", "Moon")
-        .mixin(styleMixin(filterStyles.rareAccessory))
+        .mixin(styleMixin(filterStyles.rareJewellery))
         .customSound(soundFile("rare_ring.mp3")),
       rule()
         .baseType("Amethyst")
         .itemClass("Rings")
         .rarity("==", "Rare")
         .icon("Brown", "Moon")
-        .mixin(styleMixin(filterStyles.rareAccessory))
+        .mixin(styleMixin(filterStyles.rareJewellery))
         .customSound(soundFile("rare_amethyst.mp3")),
       rule()
         .baseType("Leather")
         .itemClass("Belts")
         .rarity("==", "Rare")
         .icon("Yellow", "Pentagon")
-        .mixin(styleMixin(filterStyles.rareAccessory))
+        .mixin(styleMixin(filterStyles.rareJewellery))
         .customSound(soundFile("rare_leather.mp3")),
       rule()
         .baseType("Heavy")
         .itemClass("Belts")
         .rarity("==", "Rare")
         .icon("Orange", "Pentagon")
-        .mixin(styleMixin(filterStyles.rareAccessory))
+        .mixin(styleMixin(filterStyles.rareJewellery))
         .customSound(soundFile("rare_heavy.mp3")),
       rule()
         .baseType("Rustic")
         .itemClass("Belts")
         .rarity("==", "Rare")
         .icon("White", "Pentagon")
-        .mixin(styleMixin(filterStyles.rareAccessory))
+        .mixin(styleMixin(filterStyles.rareJewellery))
         .customSound(soundFile("rare_rustic.mp3")),
       rule()
         .baseType("Amethyst")
         .itemClass("Rings")
         .rarity("==", "Magic")
         .icon("Cyan", "Moon")
-        .mixin(styleMixin(filterStyles.magicAccessory))
+        .mixin(styleMixin(filterStyles.magicJewellery))
         .customSound(soundFile("amethyst.mp3")),
       rule()
         .baseType("Amethyst")
         .itemClass("Rings")
         .rarity("==", "Normal")
         .icon("Cyan", "Moon")
-        .mixin(styleMixin(filterStyles.accessory))
+        .mixin(styleMixin(filterStyles.jewellery))
         .customSound(soundFile("amethyst.mp3")),
       rule()
         .baseType("Iron")
@@ -226,7 +226,7 @@ export const jewellery = ({
         .areaLevel("<=", basicRingMaxAreaLevel)
         .rarity("==", "Magic")
         .icon("Purple", "Moon")
-        .mixin(styleMixin(filterStyles.magicAccessory))
+        .mixin(styleMixin(filterStyles.magicJewellery))
         .customSound(soundFile("Iron.mp3")),
       rule()
         .baseType("Iron")
@@ -234,7 +234,7 @@ export const jewellery = ({
         .areaLevel("<=", basicRingMaxAreaLevel)
         .rarity("==", "Normal")
         .icon("Purple", "Moon")
-        .mixin(styleMixin(filterStyles.accessory))
+        .mixin(styleMixin(filterStyles.jewellery))
         .customSound(soundFile("Iron.mp3")),
       rule()
         .baseType("Coral")
@@ -242,21 +242,21 @@ export const jewellery = ({
         .areaLevel("<=", basicRingMaxAreaLevel)
         .rarity("==", "Magic")
         .icon("Purple", "Moon")
-        .mixin(styleMixin(filterStyles.magicAccessory)),
+        .mixin(styleMixin(filterStyles.magicJewellery)),
       rule()
         .baseType("Coral")
         .itemClass("Rings")
         .areaLevel("<=", basicRingMaxAreaLevel)
         .rarity("==", "Normal")
         .icon("Purple", "Moon")
-        .mixin(styleMixin(filterStyles.accessory)),
+        .mixin(styleMixin(filterStyles.jewellery)),
       rule()
         .baseType("Sapphire")
         .itemClass("Rings")
         .areaLevel("<=", elementalRingMaxAreaLevel)
         .rarity("==", "Magic")
         .icon("Cyan", "Moon")
-        .mixin(styleMixin(filterStyles.magicAccessory))
+        .mixin(styleMixin(filterStyles.magicJewellery))
         .customSound(soundFile("sapphire.mp3")),
       rule()
         .baseType("Sapphire")
@@ -264,7 +264,7 @@ export const jewellery = ({
         .areaLevel("<=", elementalRingMaxAreaLevel)
         .rarity("==", "Normal")
         .icon("Cyan", "Moon")
-        .mixin(styleMixin(filterStyles.accessory))
+        .mixin(styleMixin(filterStyles.jewellery))
         .customSound(soundFile("sapphire.mp3")),
       rule()
         .baseType("Ruby")
@@ -272,7 +272,7 @@ export const jewellery = ({
         .areaLevel("<=", elementalRingMaxAreaLevel)
         .rarity("==", "Magic")
         .icon("Red", "Moon")
-        .mixin(styleMixin(filterStyles.magicAccessory))
+        .mixin(styleMixin(filterStyles.magicJewellery))
         .customSound(soundFile("ruby.mp3")),
       rule()
         .baseType("Ruby")
@@ -280,7 +280,7 @@ export const jewellery = ({
         .areaLevel("<=", elementalRingMaxAreaLevel)
         .rarity("==", "Normal")
         .icon("Red", "Moon")
-        .mixin(styleMixin(filterStyles.accessory))
+        .mixin(styleMixin(filterStyles.jewellery))
         .customSound(soundFile("ruby.mp3")),
       rule()
         .baseType("Topaz")
@@ -288,7 +288,7 @@ export const jewellery = ({
         .areaLevel("<=", elementalRingMaxAreaLevel)
         .rarity("==", "Magic")
         .icon("Yellow", "Moon")
-        .mixin(styleMixin(filterStyles.magicAccessory))
+        .mixin(styleMixin(filterStyles.magicJewellery))
         .customSound(soundFile("topaz.mp3")),
       rule()
         .baseType("Topaz")
@@ -296,7 +296,7 @@ export const jewellery = ({
         .areaLevel("<=", elementalRingMaxAreaLevel)
         .rarity("==", "Normal")
         .icon("Yellow", "Moon")
-        .mixin(styleMixin(filterStyles.accessory))
+        .mixin(styleMixin(filterStyles.jewellery))
         .customSound(soundFile("topaz.mp3")),
       rule()
         .baseType("Two-Stone")
@@ -304,7 +304,7 @@ export const jewellery = ({
         .areaLevel("<=", elementalRingMaxAreaLevel)
         .rarity("==", "Magic")
         .icon("Green", "Moon")
-        .mixin(styleMixin(filterStyles.magicAccessory))
+        .mixin(styleMixin(filterStyles.magicJewellery))
         .customSound(soundFile("two_stone.mp3")),
       rule()
         .baseType("Two-Stone")
@@ -312,7 +312,7 @@ export const jewellery = ({
         .areaLevel("<=", elementalRingMaxAreaLevel)
         .rarity("==", "Normal")
         .icon("Green", "Moon")
-        .mixin(styleMixin(filterStyles.accessory))
+        .mixin(styleMixin(filterStyles.jewellery))
         .customSound(soundFile("two_stone.mp3")),
       rule()
         .baseType("Leather")
@@ -320,7 +320,7 @@ export const jewellery = ({
         .areaLevel("<=", beltMaxAreaLevel)
         .rarity("==", "Magic")
         .icon("Yellow", "Pentagon")
-        .mixin(styleMixin(filterStyles.magicAccessory))
+        .mixin(styleMixin(filterStyles.magicJewellery))
         .customSound(soundFile("magic_leather.mp3")),
       rule()
         .baseType("Leather")
@@ -328,7 +328,7 @@ export const jewellery = ({
         .areaLevel("<=", beltMaxAreaLevel)
         .rarity("==", "Normal")
         .icon("Yellow", "Pentagon")
-        .mixin(styleMixin(filterStyles.accessory))
+        .mixin(styleMixin(filterStyles.jewellery))
         .customSound(soundFile("leather_belt.mp3")),
       rule()
         .baseType("Heavy")
@@ -336,7 +336,7 @@ export const jewellery = ({
         .areaLevel("<=", beltMaxAreaLevel)
         .rarity("==", "Magic")
         .icon("Orange", "Pentagon")
-        .mixin(styleMixin(filterStyles.magicAccessory))
+        .mixin(styleMixin(filterStyles.magicJewellery))
         .customSound(soundFile("magic_heavy.mp3")),
       rule()
         .baseType("Heavy")
@@ -344,9 +344,9 @@ export const jewellery = ({
         .areaLevel("<=", beltMaxAreaLevel)
         .rarity("==", "Normal")
         .icon("Orange", "Pentagon")
-        .mixin(styleMixin(filterStyles.accessory))
+        .mixin(styleMixin(filterStyles.jewellery))
         .customSound(soundFile("heavy_belt.mp3")),
-      rule().itemClass("Belts").rarity("==", "Rare").mixin(styleMixin(filterStyles.accessory)),
+      rule().itemClass("Belts").rarity("==", "Rare").mixin(styleMixin(filterStyles.jewellery)),
       ...amulets.flatMap((entry) => {
         const { shortBaseType, soundFileName } = normalizeLevelingAmuletConfig(entry)
         return buildAmuletRules(shortBaseType, soundFileName)
@@ -355,7 +355,7 @@ export const jewellery = ({
         .baseType(...Object.keys(LEVELING_AMULETS), "Turquoise", "Onyx", "Agate", "Citrine")
         .itemClass("Amulets")
         .rarity("==", "Rare")
-        .mixin(styleMixin(filterStyles.rareAccessory)),
+        .mixin(styleMixin(filterStyles.rareJewellery)),
     ),
   )
 }
@@ -523,7 +523,7 @@ export const normalItems = ({
           .baseType(...weaponBaseTypes)
           .areaLevel("<=", maxAreaLevel)
           .size(40),
-      rule().itemClass("Belts").rarity("==", "Normal").areaLevel("<=", maxAreaLevel).mixin(styleMixin(filterStyles.accessory)),
+      rule().itemClass("Belts").rarity("==", "Normal").areaLevel("<=", maxAreaLevel).mixin(styleMixin(filterStyles.jewellery)),
     ),
   )
 }
