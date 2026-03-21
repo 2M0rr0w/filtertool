@@ -1,1 +1,0 @@
-export type LabyrinthItems = "Silver Key" | "Golden Key" | "Treasure Key" | (string & {})

@@ -1,1 +1,0 @@
-export type HeistTargets = "Urn of Farud" | (string & {})

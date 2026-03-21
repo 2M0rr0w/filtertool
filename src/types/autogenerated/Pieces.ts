@@ -1,9 +1,0 @@
-export type Pieces =
-  | "Imperial Staff Piece"
-  | "Blunt Arrow Quiver Piece"
-  | "Archon Kite Shield Piece"
-  | "Callous Mask Piece"
-  | "Cloth Belt Piece"
-  | "Legion Sword Piece"
-  | "Vaal Aspect"
-  | (string & {})

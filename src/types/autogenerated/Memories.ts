@@ -1,1 +1,0 @@
-export type Memories = "Niko's Memory" | "Alva's Memory" | "Kirac's Memory" | "Einhar's Memory" | (string & {})

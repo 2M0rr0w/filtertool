@@ -1,1 +1,0 @@
-export type HeistBrooches = "Silver Brooch" | "Golden Brooch" | "Enamel Brooch" | "Foliate Brooch" | (string & {})
