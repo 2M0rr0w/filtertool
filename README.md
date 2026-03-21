@@ -48,6 +48,12 @@ npm run export yourfilter
 
 This also regenerates the typed item/sound files and syncs the sound pack before exporting.
 
+To export every tracked filter under `src/filters/` in one go, run:
+
+```bash
+npm run export-all
+```
+
 ## User Overrides
 
 If you want personal shared defaults or styles for all filters you can add local override files.
