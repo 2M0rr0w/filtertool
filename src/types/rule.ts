@@ -16,10 +16,10 @@ import {
 export type HexColor = `#${string}`
 
 export type StyleData = {
-  text?: HexColor
-  background?: HexColor
+  text?: HexColor | null
+  background?: HexColor | null
   backgroundOpacity?: number
-  border?: HexColor
+  border?: HexColor | null
   size?: number
 }
 

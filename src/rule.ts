@@ -174,16 +174,16 @@ const rule = (...rules: Rule[]): Rule => {
 
     style(styleData?: StyleData) {
       if (!styleData) return this
-      if (styleData.text) {
+      if (styleData.text !== undefined && styleData.text !== null) {
         const [r, g, b] = hexToRgb(styleData.text)
         this.text(r, g, b)
       }
-      if (styleData.background) {
+      if (styleData.background !== undefined && styleData.background !== null) {
         const [r, g, b] = hexToRgb(styleData.background)
         const opacity = styleData.backgroundOpacity ?? DEFAULT_STYLE_SETTINGS.backgroundOpacity
         this.background(r, g, b, Math.round(opacity * 255))
       }
-      if (styleData.border) {
+      if (styleData.border !== undefined && styleData.border !== null) {
         const [r, g, b] = hexToRgb(styleData.border)
         this.border(r, g, b)
       }

@@ -7,8 +7,8 @@ export const currency = () => {
   const gold = withSubheading(
     "Gold",
     compileRules(
-      rule().itemClass("Gold").stackSize(">=", 50).background(0, 0, 0, 200).border(0, 0, 0).size(25),
-      rule().itemClass("Gold").background(0, 0, 0, 100).border(0, 0, 0).size(25),
+      rule().itemClass("Gold").stackSize(">=", 50).mixin(styleMixin(filterStyles.goldHighStack)),
+      rule().itemClass("Gold").mixin(styleMixin(filterStyles.gold)),
     ),
   )
 
