@@ -17,28 +17,19 @@ This tool is currently built with leveling filters in mind. Any Contributions ar
 npm install
 ```
 
-2. Generate local type files and sound metadata.
-
-```bash
-npm run generate-types
-npm run generate-sounds
-```
-
-These generated files are intentionally not committed, so a fresh clone may not have full autocomplete until you run those commands.
-
-3. Set your Path of Exile filter folder in `.env`.
+2. Set your Path of Exile filter folder in `.env`.
 
 ```env
 FILTER_PATH="C:\Users\user\Documents\My Games\Path of Exile"
 ```
 
-4. Copy [`src/filters/example`](src/filters/example) to a new folder under `src/filters/`.
+3. Copy [`src/filters/example`](src/filters/example) to a new folder under `src/filters/`.
 
-5. Edit [`config.ts`](src/filters/example/config.ts).
+4. Edit [`config.ts`](src/filters/example/config.ts).
 
 For most standard filters, `config.ts` is the only file you need to touch. [`index.ts`](src/filters/example/index.ts) usually only needs changes if you want a different section layout or custom logic.
 
-6. Export your filter.
+5. Export your filter.
 
 If your filter folder is `src/filters/yourfilter`, run:
 
@@ -73,7 +64,7 @@ These overrides are merged on top of the committed shared defaults and styles au
 
 The repository stores its checked-in sound files in `sounds/`.
 
-By default, exported filters reference a `poeft-sounds/` folder next to your exported `.filter` file to avoid collisions, and the sound generation step copies the repo sounds there automatically.
+By default, exported filters reference a `poeft-sounds/` folder next to your exported `.filter` file to avoid collisions, and the export step copies the repo sounds there automatically.
 
 Example:
 
@@ -93,9 +84,24 @@ FILTER_PATH="C:\Users\user\Documents\My Games\Path of Exile"
 SOUNDS_FOLDER="sounds"
 ```
 
-You can sync the sound pack manually with:
+You can regenerate sound filename typings with:
 
 ```bash
+npm run generate-sounds
+```
+
+And you can sync the actual sound files into your Path of Exile folder with:
+
+```bash
+npm run sync-sounds
+```
+
+## Generation
+
+Run these commands when you want to refresh generated files after changing local assets:
+
+```bash
+npm run generate-types
 npm run generate-sounds
 ```
 
@@ -104,8 +110,8 @@ npm run generate-sounds
 - Most config fields have autocomplete for Path of Exile item classes, base types and link patterns
 - `soundFile("...")` also gets typed sound filename suggestions for literal filenames
 - Custom filter folders under `src/filters/` are gitignored by default
-- `src/assets/BaseTypes.csv` comes from the public FilterBlade assets repo and can be refreshed locally with `npm run update-base-types`
-- A GitHub Actions workflow at `.github/workflows/update-base-types.yml` checks upstream weekly and opens a PR when the CSV changes
+- `src/assets/BaseTypes.csv` comes from the public FilterBlade assets repo and can be refreshed locally with `npm run update-basetypes`
+- A GitHub Actions workflow at `.github/workflows/update-basetypes.yml` checks upstream weekly and opens a PR when the CSV changes
 
 ---
 

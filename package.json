@@ -10,11 +10,12 @@
     "export-all": "ts-node ./src/scripts/exportAll.ts",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "preexport": "npm run generate-types && npm run generate-sounds",
-    "preexport-all": "npm run generate-types && npm run generate-sounds",
+    "preexport": "npm run generate-types && npm run generate-sounds && npm run sync-sounds",
+    "preexport-all": "npm run generate-types && npm run generate-sounds && npm run sync-sounds",
     "update-basetypes": "ts-node ./src/scripts/updateBaseTypes.ts",
     "generate-types": "ts-node ./src/scripts/generateTypes.ts",
-    "generate-sounds": "ts-node ./src/scripts/generateSounds.ts"
+    "generate-sounds": "ts-node ./src/scripts/generateSounds.ts",
+    "sync-sounds": "ts-node ./src/scripts/syncSounds.ts"
   },
   "keywords": [],
   "author": "",

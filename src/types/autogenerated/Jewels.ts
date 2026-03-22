@@ -1,0 +1,10 @@
+export type Jewels =
+  | "Cobalt Jewel"
+  | "Crimson Jewel"
+  | "Viridian Jewel"
+  | "Prismatic Jewel"
+  | "Timeless Jewel"
+  | "Large Cluster Jewel"
+  | "Medium Cluster Jewel"
+  | "Small Cluster Jewel"
+  | (string & {})

@@ -1,0 +1,15 @@
+export type Daggers =
+  | "Glass Shank"
+  | "Skinning Knife"
+  | "Stiletto"
+  | "Flaying Knife"
+  | "Prong Dagger"
+  | "Poignard"
+  | "Trisula"
+  | "Gutting Knife"
+  | "Ambusher"
+  | "Sai"
+  | "Hollowpoint Dagger"
+  | "Pressurised Dagger"
+  | "Pneumatic Dagger"
+  | (string & {})
