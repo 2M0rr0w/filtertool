@@ -103,9 +103,9 @@ export const early = ({
       applyHighlightTargets(rule().rarity("==", rarity).areaLevel("<=", maxAreaLevel), { baseTypes, itemClasses })
 
     return [
-      buildBaseRule("Rare").mixin(styleMixin(filterStyles.earlyWeaponRare)).icon("Yellow", "UpsideDownHouse").sound(3),
-      buildBaseRule("Magic").mixin(styleMixin(filterStyles.earlyWeaponMagic)).icon("Blue", "UpsideDownHouse"),
-      buildBaseRule("Normal").mixin(styleMixin(filterStyles.earlyWeaponNormal)).icon("Cyan", "UpsideDownHouse"),
+      buildBaseRule("Rare").mixin(styleMixin(filterStyles.highlightedEquipmentRare)).icon("Yellow", "UpsideDownHouse").sound(3),
+      buildBaseRule("Magic").mixin(styleMixin(filterStyles.highlightedEquipmentMagic)).icon("Blue", "UpsideDownHouse"),
+      buildBaseRule("Normal").mixin(styleMixin(filterStyles.highlightedEquipmentNormal)).icon("Cyan", "UpsideDownHouse"),
     ]
   }
 
