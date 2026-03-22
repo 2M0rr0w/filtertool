@@ -27,19 +27,50 @@ export const twilightStrand = () =>
     ),
   )
 
-export const earlySockets = ({
+const resolveEarlyWeaponQuery = ({
+  earlyWeapons,
   preferredWeaponItemClasses = [],
   preferredWeaponMinAps,
-  weaponItemClasses = preferredWeaponItemClasses,
-  weaponBaseTypes = [],
-  weaponMinAps = preferredWeaponMinAps,
+}: Pick<Partial<BuildProfile>, "earlyWeapons" | "preferredWeaponItemClasses" | "preferredWeaponMinAps">) => {
+  const hasExplicitEarlyWeaponTargets =
+    (earlyWeapons?.itemClasses?.length ?? 0) > 0 || (earlyWeapons?.baseTypes?.length ?? 0) > 0 || earlyWeapons?.minAps !== undefined
+
+  return hasExplicitEarlyWeaponTargets
+    ? {
+        itemClasses: earlyWeapons?.itemClasses ?? [],
+        baseTypes: earlyWeapons?.baseTypes ?? [],
+        minAps: earlyWeapons?.minAps,
+        maxAreaLevel: earlyWeapons?.maxAreaLevel,
+      }
+    : {
+        itemClasses: preferredWeaponItemClasses,
+        baseTypes: [],
+        minAps: preferredWeaponMinAps,
+        maxAreaLevel: earlyWeapons?.maxAreaLevel,
+      }
+}
+
+export const earlySockets = ({
+  earlyWeapons,
+  preferredWeaponItemClasses = [],
+  preferredWeaponMinAps,
+  weaponItemClasses,
+  weaponBaseTypes,
+  weaponMinAps,
 }: EarlySocketsConfig & Partial<BuildProfile> = {}) => {
-  const resolvedWeaponBaseTypes = resolveWeaponBaseTypes({
-    itemClasses: weaponItemClasses,
-    baseTypes: weaponBaseTypes,
-    minAps: weaponMinAps,
+  const resolvedEarlyWeapons = resolveEarlyWeaponQuery({
+    earlyWeapons,
+    preferredWeaponItemClasses,
+    preferredWeaponMinAps,
   })
-  const itemClasses = weaponMinAps === undefined ? [...ARMOUR_CLASSES, ...weaponItemClasses] : ARMOUR_CLASSES
+  const resolvedWeaponBaseTypes = resolveWeaponBaseTypes({
+    itemClasses: weaponItemClasses ?? resolvedEarlyWeapons.itemClasses,
+    baseTypes: weaponBaseTypes ?? resolvedEarlyWeapons.baseTypes,
+    minAps: weaponMinAps ?? resolvedEarlyWeapons.minAps,
+  })
+  const effectiveWeaponItemClasses = weaponItemClasses ?? resolvedEarlyWeapons.itemClasses
+  const effectiveWeaponMinAps = weaponMinAps ?? resolvedEarlyWeapons.minAps
+  const itemClasses = effectiveWeaponMinAps === undefined ? [...ARMOUR_CLASSES, ...effectiveWeaponItemClasses] : ARMOUR_CLASSES
   const twoSocketMaxAreaLevel = filterDefaults.early.twoSocketMaxAreaLevel
   const threeSocketMaxAreaLevel = filterDefaults.early.threeSocketMaxAreaLevel
 
@@ -73,6 +104,7 @@ export const earlySockets = ({
 }
 
 export const early = ({
+  earlyWeapons,
   preferredWeaponItemClasses = [],
   preferredWeaponMinAps,
   weaponHighlights = [],
@@ -83,6 +115,11 @@ export const early = ({
   momentumMaxAreaLevel = filterDefaults.early.momentumMaxAreaLevel,
   shieldProgression,
 }: EarlyConfig & Partial<BuildProfile>) => {
+  const resolvedEarlyWeapons = resolveEarlyWeaponQuery({
+    earlyWeapons,
+    preferredWeaponItemClasses,
+    preferredWeaponMinAps,
+  })
   const earlyBootsMaxAreaLevel = filterDefaults.early.earlyBootsMaxAreaLevel
   const shieldConfig = normalizeShieldProgressionConfig(shieldProgression)
   const defaultMomentumItemClasses = shieldConfig.enabled ? SOCKETABLE_CLASSES : ARMOUR_CLASSES
@@ -98,9 +135,33 @@ export const early = ({
       .areaLevel("<=", effectiveMomentumMaxAreaLevel)
       .mixin(styleMixin(filterStyles.momentum))
       .icon("Orange", "Kite")
-  const buildWeaponHighlightRules = ({ baseTypes, itemClasses, maxAreaLevel = earlyMaxAreaLevel }: (typeof weaponHighlights)[number]) => {
+  const buildWeaponHighlightRules = ({
+    baseTypes,
+    itemClasses,
+    minAps,
+    maxAreaLevel = earlyMaxAreaLevel,
+  }: {
+    baseTypes?: readonly string[]
+    itemClasses?: readonly string[]
+    minAps?: number
+    maxAreaLevel?: number
+  }) => {
+    const { itemClasses: resolvedItemClasses, baseTypes: resolvedBaseTypes } = resolveMixedItemClassWeaponQuery({
+      itemClasses,
+      baseTypes,
+      minAps,
+    })
+    const hasTargets = (resolvedItemClasses?.length ?? 0) > 0 || (resolvedBaseTypes?.length ?? 0) > 0
+
+    if (!hasTargets) {
+      return []
+    }
+
     const buildBaseRule = (rarity: "Rare" | "Magic" | "Normal") =>
-      applyHighlightTargets(rule().rarity("==", rarity).areaLevel("<=", maxAreaLevel), { baseTypes, itemClasses })
+      applyHighlightTargets(rule().rarity("==", rarity).areaLevel("<=", maxAreaLevel), {
+        baseTypes: resolvedBaseTypes.length > 0 ? resolvedBaseTypes : undefined,
+        itemClasses: resolvedItemClasses,
+      })
 
     return [
       buildBaseRule("Rare").mixin(styleMixin(filterStyles.highlightedEquipmentRare)).icon("Yellow", "UpsideDownHouse").sound(3),
@@ -108,10 +169,15 @@ export const early = ({
       buildBaseRule("Normal").mixin(styleMixin(filterStyles.highlightedEquipmentNormal)).icon("Cyan", "UpsideDownHouse"),
     ]
   }
+  const sharedEarlyWeaponHighlights =
+    resolvedEarlyWeapons.baseTypes.length > 0 || resolvedEarlyWeapons.itemClasses.length > 0 || resolvedEarlyWeapons.minAps !== undefined
+      ? [resolvedEarlyWeapons]
+      : []
 
   return withHeading(
     "Early",
     compileRules(
+      ...sharedEarlyWeaponHighlights.flatMap(buildWeaponHighlightRules),
       ...weaponHighlights.flatMap(buildWeaponHighlightRules),
       rule()
         .itemClass("Boots")

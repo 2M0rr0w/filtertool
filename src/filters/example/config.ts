@@ -12,9 +12,12 @@ only need to set `links.genericFourLinks` if you want a different generic 4-link
 your leveling weapons. `preferredWeaponMinAps` can narrow that list further.
 
 `preferredWeaponItemClasses` and `preferredWeaponMinAps` also feed the early socket
-and momentum-color sections by default. Only set `earlySockets.weaponItemClasses`,
-`earlySockets.weaponMinAps`, or `early.momentumColors` if one of those sections
-should use a different weapon query.
+and momentum-color sections by default. `earlyWeapons` is a separate shared query
+for the early weapon highlight and early socket sections, including explicit base types.
+If `earlyWeapons` is omitted or left empty, those sections fall back to the preferred weapon query.
+Only set `early.weaponHighlights`, `earlySockets.weaponItemClasses`,
+`earlySockets.weaponBaseTypes`, `earlySockets.weaponMinAps`, or `early.momentumColors`
+if one of those sections should use a different weapon query.
 
 `shieldProgression` controls:
 - the shield `RGG` 3-link rule
@@ -27,11 +30,17 @@ should use a different weapon query.
 You can also use `{ mode: "early", maxAreaLevel: 10 }` to override the default early cutoff. */
 
 export const buildProfile = {
-  preferredArmourTypes: ["armour", "evasion", "armour-evasion"] as const,
-  preferredWeaponItemClasses: ["Two Hand Axes", "Two Hand Maces"] as const,
+  preferredArmourTypes: ["armour", "evasion", "armour-evasion"],
+  preferredWeaponItemClasses: ["Two Hand Axes", "Two Hand Maces"],
   // preferredWeaponMinAps: 1.3,
+  // Shared early weapon query for early highlights and early sockets.
+  // earlyWeapons: {
+  //   itemClasses: ["Two Hand Axes", "Two Hand Maces"],
+  //   baseTypes: ["Stone Axe", "Driftwood Maul"],
+  //   minAps: 1.3,
+  // },
   shieldProgression: "early",
-} as const satisfies BuildProfile
+} satisfies BuildProfile
 
 export const buildSpecificOptions: BuildSpecificOptions = {
   links: {
@@ -123,14 +132,13 @@ export const buildSpecificOptions: BuildSpecificOptions = {
     ],
   },
   early: {
-    weaponHighlights: [
-      // Strong early weapon bases.
-      { baseTypes: ["Stone Axe", "Driftwood Maul", "Corroded Blade"] },
-      // You can also highlight a whole weapon class.
-      { itemClasses: ["Two Hand Maces"] },
-      // And optionally give individual entries their own level cap.
-      // { baseTypes: ["Crude Bow"], maxAreaLevel: 10 },
-    ],
+    // Optional extra highlight overrides on top of `buildProfile.earlyWeapons`.
+    // weaponHighlights: [
+    //   { baseTypes: ["Stone Axe", "Driftwood Maul", "Corroded Blade"] },
+    //   { itemClasses: ["Two Hand Maces"] },
+    //   // And optionally give individual entries their own level cap.
+    //   // { baseTypes: ["Crude Bow"], maxAreaLevel: 10 },
+    // ],
     // Disable this for caster builds that don't care about rustic bases
     showRustic: true,
     // Disable if you're a ruthless enjoyer
@@ -140,10 +148,11 @@ export const buildSpecificOptions: BuildSpecificOptions = {
   },
   earlySockets: {
     // These classes/bases only feed the early 2-socket / 3-socket socket section.
-    // weaponItemClasses and weaponMinAps default to the preferred weapon query.
+    // weaponItemClasses / weaponBaseTypes / weaponMinAps default to `buildProfile.earlyWeapons`
+    // if set, otherwise they fall back to the preferred weapon query.
     // weaponItemClasses: ["Two Hand Axes", "Two Hand Maces"],
     // weaponMinAps: 1.3,
     // Optional specific bases for the same early socket rules.
     // weaponBaseTypes: ["Stone Axe", "Driftwood Maul"],
   },
-} as const
+}

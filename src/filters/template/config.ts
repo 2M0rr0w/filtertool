@@ -1,10 +1,15 @@
 import { type BuildProfile, type BuildSpecificOptions } from "../shared"
 
 export const buildProfile = {
-  preferredArmourTypes: [] as const,
-  preferredWeaponItemClasses: [] as const,
+  preferredArmourTypes: [],
+  preferredWeaponItemClasses: [],
+  // earlyWeapons: {
+  //   itemClasses: [],
+  //   baseTypes: [],
+  //   // minAps: 1.3,
+  // },
   shieldProgression: "early",
-} as const satisfies BuildProfile
+} satisfies BuildProfile
 
 export const buildSpecificOptions: BuildSpecificOptions = {
   links: {
@@ -33,4 +38,4 @@ export const buildSpecificOptions: BuildSpecificOptions = {
     includeMomentumColors: true,
   },
   earlySockets: {},
-} as const
+}

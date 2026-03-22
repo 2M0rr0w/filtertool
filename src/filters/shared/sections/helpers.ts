@@ -66,6 +66,7 @@ export type BuildProfile = {
   preferredArmourTypes: readonly DefenceBaseType[]
   preferredWeaponItemClasses?: readonly WeaponItemClass[]
   preferredWeaponMinAps?: number
+  earlyWeapons?: SharedEarlyWeaponConfig
   shieldProgression?: ShieldProgressionConfig
 }
 
@@ -556,6 +557,14 @@ export const resolveMixedItemClassWeaponQuery = ({
 export type WeaponHighlightConfig = {
   baseTypes?: readonly WeaponBaseType[]
   itemClasses?: readonly WeaponItemClass[]
+  minAps?: number
+  maxAreaLevel?: number
+}
+
+export type SharedEarlyWeaponConfig = {
+  baseTypes?: readonly WeaponBaseType[]
+  itemClasses?: readonly WeaponItemClass[]
+  minAps?: number
   maxAreaLevel?: number
 }
 
